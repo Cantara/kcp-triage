@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "TriageReport",
+  "type": "object",
+  "required": ["version", "site", "crawl", "classification", "security", "generatedAt", "orchestrationMeta"],
+  "properties": {
+    "version": { "type": "string", "const": "0.1.0" },
+    "site": { "$ref": "crawl-result.json#/properties/site" },
+    "crawl": { "$ref": "crawl-result.json" },
+    "classification": { "$ref": "content-classification.json" },
+    "security": { "$ref": "security-audit.json" },
+    "generatedAt": { "type": "string", "format": "date-time" },
+    "orchestrationMeta": {
+      "type": "object",
+      "required": ["orchestratorModel", "delegatedTasks"],
+      "properties": {
+        "orchestratorModel": { "type": "string" },
+        "delegatedTasks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["task", "model", "durationMs", "tokenUsage"],
+            "properties": {
+              "task": { "type": "string" },
+              "model": { "type": "string" },
+              "durationMs": { "type": "number" },
+              "tokenUsage": {
+                "type": "object",
+                "required": ["input", "output"],
+                "properties": {
+                  "input": { "type": "integer" },
+                  "output": { "type": "integer" }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

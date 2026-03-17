@@ -1,0 +1,67 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "CrawlResult",
+  "type": "object",
+  "required": ["site", "pages"],
+  "properties": {
+    "site": {
+      "type": "object",
+      "required": ["url", "domain", "discoveredAt"],
+      "properties": {
+        "url": { "type": "string", "format": "uri" },
+        "domain": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "language": { "type": "string" },
+        "discoveredAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "pages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["url", "statusCode", "contentType", "headings", "links", "metaTags", "bodyTextPreview", "crawledAt"],
+        "properties": {
+          "url": { "type": "string", "format": "uri" },
+          "statusCode": { "type": "integer" },
+          "contentType": { "type": "string" },
+          "title": { "type": "string" },
+          "headings": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["level", "text"],
+              "properties": {
+                "level": { "type": "integer", "minimum": 1, "maximum": 6 },
+                "text": { "type": "string" }
+              }
+            }
+          },
+          "links": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["href", "text"],
+              "properties": {
+                "href": { "type": "string" },
+                "text": { "type": "string" },
+                "rel": { "type": "string" }
+              }
+            }
+          },
+          "metaTags": {
+            "type": "object",
+            "additionalProperties": { "type": "string" }
+          },
+          "bodyTextPreview": { "type": "string" },
+          "crawledAt": { "type": "string", "format": "date-time" }
+        }
+      }
+    },
+    "sitemapUrls": {
+      "type": "array",
+      "items": { "type": "string", "format": "uri" }
+    },
+    "robotsTxt": { "type": "string" }
+  }
+}

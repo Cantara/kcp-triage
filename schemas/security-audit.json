@@ -1,0 +1,39 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SecurityAudit",
+  "type": "object",
+  "required": ["url", "tlsValid", "headers", "overallGrade", "vulnerabilities", "auditedAt"],
+  "properties": {
+    "url": { "type": "string", "format": "uri" },
+    "tlsVersion": { "type": "string" },
+    "tlsValid": { "type": "boolean" },
+    "headers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["header", "present", "grade"],
+        "properties": {
+          "header": { "type": "string" },
+          "present": { "type": "boolean" },
+          "value": { "type": "string" },
+          "grade": { "type": "string", "enum": ["pass", "warn", "fail", "info"] },
+          "recommendation": { "type": "string" }
+        }
+      }
+    },
+    "overallGrade": { "type": "string", "enum": ["A", "B", "C", "D", "F"] },
+    "vulnerabilities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["type", "severity", "description"],
+        "properties": {
+          "type": { "type": "string" },
+          "severity": { "type": "string", "enum": ["low", "medium", "high", "critical"] },
+          "description": { "type": "string" }
+        }
+      }
+    },
+    "auditedAt": { "type": "string", "format": "date-time" }
+  }
+}

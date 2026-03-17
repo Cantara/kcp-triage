@@ -1,0 +1,32 @@
+{
+  "name": "site-triage-meta",
+  "version": "0.1.0",
+  "description": "Meta-scaffolding CLI for LLM-orchestrated website triage — builds the system that builds the system",
+  "type": "module",
+  "bin": {
+    "site-triage": "./dist/cli.js"
+  },
+  "scripts": {
+    "dev": "bun run src/cli.ts",
+    "build": "bun build src/cli.ts --outdir dist --target node",
+    "typecheck": "tsc --noEmit",
+    "test": "bun test",
+    "lint": "bunx @biomejs/biome check src/",
+    "fmt": "bunx @biomejs/biome format --write src/"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
+    "commander": "^13.0.0",
+    "zod": "^3.24.0",
+    "cheerio": "^1.0.0",
+    "undici": "^7.0.0",
+    "chalk": "^5.4.0",
+    "ora": "^8.1.0",
+    "pino": "^9.6.0"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5.7.0",
+    "@biomejs/biome": "^1.9.0"
+  }
+}
