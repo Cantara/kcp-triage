@@ -1,7 +1,13 @@
-import type { ContentClassification, CrawlResult, SecurityAudit, SiteSynthesis, SiteProject } from "../schemas/index.js";
-import { SiteProjectSchema } from "../schemas/index.js";
-import type { Dispatcher, TaskResult } from "../orchestration/dispatcher.js";
 import type { TaskRouting } from "../orchestration/config.js";
+import type { Dispatcher, TaskResult } from "../orchestration/dispatcher.js";
+import type {
+	ContentClassification,
+	CrawlResult,
+	SecurityAudit,
+	SiteProject,
+	SiteSynthesis,
+} from "../schemas/index.js";
+import { SiteProjectSchema } from "../schemas/index.js";
 
 const SYSTEM_PROMPT = `You are a site documentation generator for the KCP (Knowledge Context Protocol) system. Given triage data about a website — crawl results, content classification, security audit, and synthesis — generate a set of project files that will orient an LLM agent to work with this site effectively.
 
@@ -80,18 +86,28 @@ export async function generateSiteProject(
 		},
 		security: {
 			grade: security.overallGrade,
-			missingHeaders: security.headers.filter(h => h.grade === "fail").map(h => h.header),
+			transport: {
+				httpRedirectsToHttps: security.transport.httpRedirectsToHttps,
+				httpStatusCode: security.transport.httpStatusCode,
+				redirectLocation: security.transport.redirectLocation,
+			},
+			missingHeaders: security.headers
+				.filter((h) => h.grade === "fail")
+				.map((h) => h.header),
+			vulnerabilities: security.vulnerabilities,
 		},
 		crawl: {
 			pageCount: crawl.pages.length,
 			robotsTxt: crawl.robotsTxt?.slice(0, 500),
 			sitemapUrls: crawl.sitemapUrls,
-			pages: crawl.pages.slice(0, 10).map(p => ({
+			pages: crawl.pages.slice(0, 10).map((p) => ({
 				url: p.url,
 				title: p.title,
 				headings: p.headings.slice(0, 5),
 				bodyPreview: p.bodyTextPreview.slice(0, 300),
-				links: p.links.slice(0, 15).map(l => ({ href: l.href, text: l.text })),
+				links: p.links
+					.slice(0, 15)
+					.map((l) => ({ href: l.href, text: l.text })),
 			})),
 		},
 	};
@@ -103,7 +119,10 @@ export async function generateSiteProject(
 		maxTokens: 32768,
 		parse: (raw) => {
 			// Strip markdown fences if present
-			const stripped = raw.replace(/^```(?:json)?\s*/m, "").replace(/\s*```\s*$/m, "").trim();
+			const stripped = raw
+				.replace(/^```(?:json)?\s*/m, "")
+				.replace(/\s*```\s*$/m, "")
+				.trim();
 			const obj = JSON.parse(stripped);
 			// LLM may return null for optional fields — coerce to undefined
 			if (obj.unknowns === null) obj.unknowns = undefined;

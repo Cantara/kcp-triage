@@ -1,47 +1,41 @@
-# stig.lau.no — Sitemap
+# Site Structure
 
-## Site Structure
+## Top Level
+- `/` — Home; displays recent posts
 
-### Homepage
-- **URL:** `/`
-- **Content:** Recent blog posts, archive sidebar, labels
+## Posts (Dated)
+- `/2011/08/moved-to-bloggercom.html` — Latest post (Aug 2011)
+- `/2011/07/software-engineering-approach-to.html` — Real estate marketing essay (Jul 2011)
+- `/2011/07/auto-draft.html` — Empty draft (Jul 2011)
+- `/2009/11/open-sourcing-business-model.html` — Business model thoughts (Nov 2009)
+- `/2009/10/making-school-bands-cool-again.html` — (referenced but not fully crawled)
 
-### Blog Posts (Individual)
-- **URL Pattern:** `/{YYYY}/{MM}/{post-slug}.html`
-- **Example:** `/2011/08/moved-to-bloggercom.html`, `/2011/07/software-engineering-approach-to.html`
-- **Content:** Full post text, author info, timestamp, comment section, share buttons
+## Archives by Year
+- `/2011/` — 2011 posts
+- `/2009/` — 2009 posts
 
-### Archive Pages
-- **URL Pattern:** `/{YYYY}/` (e.g., `/2011/`, `/2009/`)
-- **Content:** Posts from a specific year, collapsible sidebar
+## Labels (Category Filters)
+- `/search/label/3%20room`
+- `/search/label/Apartment`
+- `/search/label/Architecture`
+- `/search/label/balcony`
+- `/search/label/Oslo`
+- `/search/label/Idea`
 
-### Label/Tag Pages
-- **URL Pattern:** `/search/label/{LABEL}` (e.g., `/search/label/Architecture`, `/search/label/Apartment`)
-- **Content:** Posts tagged with that label, sorted by date
-- **Available Labels:** 3 room, Apartment, Architecture, balcony, Oslo, Idea, and others
-
-### Feeds
-- **Post feed:** Via sitemap.xml or direct Atom links
-- **Comment feed:** `/feeds/{POSTID}/comments/default`
+## Other
+- `/sitemap.xml` — XML sitemap for crawlers
+- `/feeds/` — Atom/RSS feeds (per-post comment feeds available)
 
 ## Navigation Flow
 
-```
-Homepage (/)
-  ├─ Recent Posts
-  │  └─ Individual Post (/{YYYY}/{MM}/{slug}.html)
-  │     └─ Comments section
-  ├─ Archive Sidebar
-  │  └─ Year (e.g., ▼ 2011)
-  │     └─ Monthly posts
-  └─ Labels Cloud
-     └─ Label Page (/search/label/{LABEL})
-        └─ Posts with that tag
-```
+1. Enter home (`/`)
+2. Scan recent posts or use sidebar archive/labels
+3. Click post title or date to view full post
+4. Within post, see "Newer Post" / "Older Post" nav or return to home
+5. Click label in post metadata to filter posts by that label
+6. Use year dropdown in sidebar to jump to annual archive
 
-## Crawl Summary
-
-- **Total pages crawled:** 20
-- **Key posts identified:** 6 major posts from 2009–2011
-- **Sitemap:** http://stig.lau.no/sitemap.xml
-- **robots.txt:** Disallows `/search` (generic user-agent) and `/share-widget`; allows `/search/label/*`
+**External Links in Posts:**
+- Link to http://www.lagerboks.no (storage solutions)
+- Link to http://www.finn.no (Norwegian real estate portal)
+- Link to http://leilighet.kompo.st (property search tool)

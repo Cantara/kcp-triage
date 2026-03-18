@@ -1,7 +1,12 @@
-import type { ContentClassification, CrawlResult, SecurityAudit, SiteSynthesis } from "../schemas/index.js";
-import { SiteSynthesisSchema } from "../schemas/index.js";
-import type { Dispatcher, TaskResult } from "../orchestration/dispatcher.js";
 import type { TaskRouting } from "../orchestration/config.js";
+import type { Dispatcher, TaskResult } from "../orchestration/dispatcher.js";
+import type {
+	ContentClassification,
+	CrawlResult,
+	SecurityAudit,
+	SiteSynthesis,
+} from "../schemas/index.js";
+import { SiteSynthesisSchema } from "../schemas/index.js";
 
 const SYSTEM_PROMPT = `You are a web service analyst. Given crawl data, content classification, and security audit results for a website, produce a structured synthesis for an AI agent that needs to understand and interact with this site.
 
@@ -33,6 +38,12 @@ export async function synthesizeSite(
 		techStack: classification.techStack,
 		classificationReasoning: classification.reasoning,
 		securityGrade: security.overallGrade,
+		securityTransport: {
+			httpRedirectsToHttps: security.transport.httpRedirectsToHttps,
+			httpStatusCode: security.transport.httpStatusCode,
+			redirectLocation: security.transport.redirectLocation,
+			vulnerabilities: security.vulnerabilities,
+		},
 		pages: crawl.pages.slice(0, 8).map((p) => ({
 			url: p.url,
 			title: p.title,

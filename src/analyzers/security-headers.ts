@@ -48,15 +48,22 @@ const EXPECTED_HEADERS = [
  * Fetch a URL and audit its security headers.
  * This is deterministic — no LLM call. The LLM synthesises findings later.
  */
-export async function auditSecurityHeaders(url: string, timeoutMs: number): Promise<SecurityAudit> {
+export async function auditSecurityHeaders(
+	url: string,
+	timeoutMs: number,
+): Promise<SecurityAudit> {
+	const httpUrl = url.replace(/^https:/, "http:");
 	const controller = new AbortController();
 	const timer = setTimeout(() => controller.abort(), timeoutMs);
 
 	try {
-		const res = await fetch(url, { signal: controller.signal, redirect: "follow" });
+		const [httpsRes, httpRes] = await Promise.all([
+			fetch(url, { signal: controller.signal, redirect: "follow" }),
+			fetch(httpUrl, { signal: controller.signal, redirect: "manual" }),
+		]);
 
 		const headers = EXPECTED_HEADERS.map((check) => {
-			const value = res.headers.get(check.header) ?? undefined;
+			const value = httpsRes.headers.get(check.header) ?? undefined;
 			const present = value !== undefined;
 			let grade: "pass" | "warn" | "fail" | "info";
 
@@ -75,7 +82,9 @@ export async function auditSecurityHeaders(url: string, timeoutMs: number): Prom
 				present,
 				value,
 				grade,
-				recommendation: !present ? `Add ${check.header}: ${check.description}` : undefined,
+				recommendation: !present
+					? `Add ${check.header}: ${check.description}`
+					: undefined,
 			};
 		});
 
@@ -89,16 +98,58 @@ export async function auditSecurityHeaders(url: string, timeoutMs: number): Prom
 		else if (fails <= 2) overallGrade = "D";
 		else overallGrade = "F";
 
+		const redirectLocation = httpRes.headers.get("location") ?? undefined;
+		const httpRedirectsToHttps =
+			httpRes.status >= 300 &&
+			httpRes.status < 400 &&
+			redirectLocation !== undefined &&
+			redirectLocation.startsWith("https://");
+
+		const vulnerabilities: SecurityAudit["vulnerabilities"] = [];
+		if (!httpRedirectsToHttps) {
+			vulnerabilities.push({
+				type: "insecure-transport",
+				severity: "high",
+				description: `HTTP endpoint does not redirect to HTTPS (status ${httpRes.status})`,
+			});
+			overallGrade = downgradeGrade(overallGrade);
+		}
+
 		return {
 			url,
 			tlsVersion: undefined, // TODO: extract from TLS handshake
 			tlsValid: url.startsWith("https"),
+			transport: {
+				httpUrl,
+				httpsUrl: url,
+				httpStatusCode: httpRes.status,
+				httpsStatusCode: httpsRes.status,
+				httpRedirectsToHttps,
+				redirectLocation,
+			},
 			headers,
 			overallGrade,
-			vulnerabilities: [],
+			vulnerabilities,
 			auditedAt: new Date().toISOString(),
 		};
 	} finally {
 		clearTimeout(timer);
+	}
+}
+
+function downgradeGrade(
+	grade: SecurityAudit["overallGrade"],
+): SecurityAudit["overallGrade"] {
+	switch (grade) {
+		case "A":
+			return "B";
+		case "B":
+			return "C";
+		case "C":
+			return "D";
+		case "D":
+			return "F";
+		case "F":
+			return "F";
 	}
 }

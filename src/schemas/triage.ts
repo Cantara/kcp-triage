@@ -18,7 +18,13 @@ export const CrawlPageSchema = z.object({
 	contentType: z.string(),
 	title: z.string().optional(),
 	headings: z.array(z.object({ level: z.number().int(), text: z.string() })),
-	links: z.array(z.object({ href: z.string(), text: z.string(), rel: z.string().optional() })),
+	links: z.array(
+		z.object({
+			href: z.string(),
+			text: z.string(),
+			rel: z.string().optional(),
+		}),
+	),
 	metaTags: z.record(z.string()),
 	bodyTextPreview: z.string().describe("First ~2000 chars of visible text"),
 	crawledAt: z.string().datetime(),
@@ -60,11 +66,22 @@ export type ContentClassification = z.infer<typeof ContentClassificationSchema>;
 
 // ─── Site Synthesis ──────────────────────────────────────────────
 export const SiteSynthesisSchema = z.object({
-	narrative: z.string().describe("Human-readable summary of what the site does and who it is for"),
-	apiEndpoints: z.array(z.string()).describe("Discovered API or service endpoints"),
-	authentication: z.string().optional().describe("Detected authentication method (e.g. OAuth, API key, none)"),
-	keyCapabilities: z.array(z.string()).describe("Top capabilities/features of the site"),
-	interactionModel: z.enum(["read-only", "authenticated", "api-first", "cms", "unknown"]).describe("How agents would interact with this site"),
+	narrative: z
+		.string()
+		.describe("Human-readable summary of what the site does and who it is for"),
+	apiEndpoints: z
+		.array(z.string())
+		.describe("Discovered API or service endpoints"),
+	authentication: z
+		.string()
+		.optional()
+		.describe("Detected authentication method (e.g. OAuth, API key, none)"),
+	keyCapabilities: z
+		.array(z.string())
+		.describe("Top capabilities/features of the site"),
+	interactionModel: z
+		.enum(["read-only", "authenticated", "api-first", "cms", "unknown"])
+		.describe("How agents would interact with this site"),
 });
 export type SiteSynthesis = z.infer<typeof SiteSynthesisSchema>;
 
@@ -82,15 +99,24 @@ export const ApiEntrySchema = z.object({
 });
 
 export const SiteProjectSchema = z.object({
-	claudeMd: z.string().describe("CLAUDE.md content — LLM orientation for working with this site"),
+	claudeMd: z
+		.string()
+		.describe("CLAUDE.md content — LLM orientation for working with this site"),
 	readmeMd: z.string().describe("README.md — human-readable project card"),
 	sitemapMd: z.string().describe("sitemap.md — structured navigation model"),
-	skills: z.array(z.object({
-		name: z.string().describe("Skill filename without extension, e.g. navigate"),
-		content: z.string().describe("Skill markdown content"),
-	})),
+	skills: z.array(
+		z.object({
+			name: z
+				.string()
+				.describe("Skill filename without extension, e.g. navigate"),
+			content: z.string().describe("Skill markdown content"),
+		}),
+	),
 	apis: z.array(ApiEntrySchema),
-	unknowns: z.string().optional().describe("unknowns.md content — empty/absent if no unknowns"),
+	unknowns: z
+		.string()
+		.optional()
+		.describe("unknowns.md content — empty/absent if no unknowns"),
 });
 export type SiteProject = z.infer<typeof SiteProjectSchema>;
 
@@ -103,10 +129,20 @@ export const SecurityHeaderCheckSchema = z.object({
 	recommendation: z.string().optional(),
 });
 
+export const SecurityTransportSchema = z.object({
+	httpUrl: z.string().url(),
+	httpsUrl: z.string().url(),
+	httpStatusCode: z.number().int().optional(),
+	httpsStatusCode: z.number().int().optional(),
+	httpRedirectsToHttps: z.boolean(),
+	redirectLocation: z.string().optional(),
+});
+
 export const SecurityAuditSchema = z.object({
 	url: z.string().url(),
 	tlsVersion: z.string().optional(),
 	tlsValid: z.boolean(),
+	transport: SecurityTransportSchema,
 	headers: z.array(SecurityHeaderCheckSchema),
 	overallGrade: z.enum(["A", "B", "C", "D", "F"]),
 	vulnerabilities: z.array(

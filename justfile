@@ -29,6 +29,22 @@ dry-run domain:
 report domain format="summary":
     bun run dev report --config "sites/{{ domain }}/triage.config.json" -f "{{ format }}"
 
+# Write a triage report to disk (format: summary|markdown|json)
+report-file domain format="markdown" output="":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    out="{{ output }}"
+    if [ -z "$out" ]; then
+        case "{{ format }}" in
+            json) out="sites/{{ domain }}/triage-report.export.json" ;;
+            markdown) out="sites/{{ domain }}/triage-report.export.md" ;;
+            summary) out="sites/{{ domain }}/triage-report.export.txt" ;;
+            *) echo "Unsupported format: {{ format }}" >&2; exit 1 ;;
+        esac
+    fi
+    bun run dev report --config "sites/{{ domain }}/triage.config.json" -f "{{ format }}" > "$out"
+    echo "Wrote $out"
+
 # Init + scan in one step
 triage url output_dir="":
     #!/usr/bin/env bash
@@ -58,6 +74,111 @@ report-all format="summary":
         bun run dev report --config "$config" -f "{{ format }}"
         echo
     done
+
+# ── Live Verification ────────────────────────────────────────────
+
+# Show live security-relevant headers for a path
+sec-headers domain path="/":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    curl -sS -o /dev/null -D - "https://{{ domain }}{{ path }}" \
+        | grep -Ei '^(HTTP/|location:|content-type:|cache-control:|server:|strict-transport-security:|content-security-policy:|x-content-type-options:|x-frame-options:|referrer-policy:|permissions-policy:|cross-origin-opener-policy:|cross-origin-resource-policy:|cross-origin-embedder-policy:|set-cookie:)' || true
+
+# Inspect Set-Cookie behavior and what a standards-based client stores
+sec-cookies domain path="/":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    headers=$(mktemp)
+    jar=$(mktemp)
+    trap 'rm -f "$headers" "$jar"' EXIT
+    curl -sS -D "$headers" -o /dev/null -c "$jar" "https://{{ domain }}{{ path }}"
+    echo "== Response Set-Cookie lines =="
+    grep -i '^set-cookie:' "$headers" || true
+    echo
+    echo "== Cookies stored by the client =="
+    if grep -iq '^set-cookie:' "$headers"; then
+        echo "== Set-Cookie name counts =="
+        grep -i '^set-cookie:' "$headers" \
+            | sed -E 's/^set-cookie:[[:space:]]*//I; s/=.*$//' \
+            | sort \
+            | uniq -c
+        echo
+    else
+        echo "No Set-Cookie headers observed."
+        echo
+    fi
+    if grep -qv '^#' "$jar"; then
+        cat "$jar"
+    else
+        echo "(none)"
+    fi
+
+# Fetch a path and grep the HTML for a pattern
+sec-grep domain pattern path="/":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    body=$(mktemp)
+    trap 'rm -f "$body"' EXIT
+    curl -sS "https://{{ domain }}{{ path }}" -o "$body"
+    rg -n "{{ pattern }}" "$body" || true
+
+# Probe an endpoint with a specific method and print response headers
+sec-probe domain path="/find_v2/" method="GET":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    curl -sS -X "{{ method }}" -o /dev/null -D - "https://{{ domain }}{{ path }}" | sed -n '1,40p'
+
+# Compare HTTP and HTTPS behavior for the root path
+sec-transport domain:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    echo "== HTTP root =="
+    curl -sS -o /dev/null -D - "http://{{ domain }}/" | sed -n '1,20p'
+    echo
+    echo "== HTTPS root =="
+    curl -sS -o /dev/null -D - "https://{{ domain }}/" | sed -n '1,20p'
+
+# Run the standard live verification bundle used during report review
+sec-verify domain path1="/" path2="/robots.txt" path3="/sitemap.xml":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    headers=$(mktemp)
+    jar=$(mktemp)
+    body=$(mktemp)
+    trap 'rm -f "$headers" "$jar" "$body"' EXIT
+
+    echo "== HTTP root =="
+    curl -sS -o /dev/null -D - "http://{{ domain }}/" | sed -n '1,20p'
+    echo
+
+    for path in "{{ path1 }}" "{{ path2 }}" "{{ path3 }}"; do
+        echo "== Headers: $path =="
+        curl -sS -o /dev/null -D - "https://{{ domain }}$path" \
+            | grep -Ei '^(HTTP/|location:|content-type:|cache-control:|server:|strict-transport-security:|content-security-policy:|x-content-type-options:|x-frame-options:|referrer-policy:|permissions-policy:|set-cookie:)' || true
+        echo
+    done
+
+    echo "== Cookies: {{ path1 }} =="
+    curl -sS -D "$headers" -o /dev/null -c "$jar" "https://{{ domain }}{{ path1 }}"
+    if grep -iq '^set-cookie:' "$headers"; then
+        grep -i '^set-cookie:' "$headers" \
+            | sed -E 's/^set-cookie:[[:space:]]*//I; s/=.*$//' \
+            | sort \
+            | uniq -c
+        echo
+        echo "Stored cookies:"
+        if grep -qv '^#' "$jar"; then
+            cat "$jar"
+        else
+            echo "(none)"
+        fi
+    else
+        echo "No Set-Cookie headers observed."
+    fi
+    echo
+    echo "== HTML grep: {{ path1 }} =="
+    curl -sS "https://{{ domain }}{{ path1 }}" -o "$body"
+    rg -n 'canonical|og:url|httpsEnabled|GOOGLE_API_KEY|LIPSCORE_API_KEY|instrumentationKey|__RequestVerificationToken|csrf|gapi|adsbygoogle|iframe' "$body" || true
 
 # ── Site Configuration ───────────────────────────────────────────
 

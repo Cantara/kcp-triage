@@ -1,78 +1,89 @@
-# Skill: Navigate stig.lau.no
+# Skill: Navigate the Blog
 
 ## Overview
-This skill covers how to browse the blog, locate posts, use the archive sidebar, and filter by labels.
+This blog is a simple read-only archive with posts organized by date and label. Navigation is straightforward: use the home page, sidebar archives, or label filters to find posts.
 
-## Prerequisites
-- Browser access to https://stig.lau.no/
-- No authentication required
+## Home Page
+**URL:** `https://stig.lau.no/`
 
-## Steps
+- Displays the most recent posts in reverse chronological order
+- Right sidebar shows:
+  - **About Me** section (if present)
+  - **Blog Archive** expandable tree (click year to see months/posts)
+  - **Labels** as clickable links
 
-### 1. Access the Homepage
-**Action:** Load `https://stig.lau.no/`
+## Finding Posts by Date
 
-**Expected outcome:**
-- Page title: "What's next"
-- Main heading: "What's next" (H1)
-- Recent blog posts displayed in reverse chronological order
-- Sidebar with archive and labels
+### Recent Posts
+1. Go to home (`https://stig.lau.no/`)
+2. Scroll to see post titles, dates, and snippets
+3. Click any post title to open full post
 
-### 2. Browse Recent Posts
-**Action:** Scroll down the homepage or look for post titles (e.g., "Moved to blogger.com", "A software engineering approach to marketing real-estate")
+### Browse by Year/Month
+1. Home → Right sidebar → "Blog Archive"
+2. Click a year (e.g., "▼ 2011") to expand
+3. See posts grouped under months
+4. Click a post to view
+5. Or click the year itself (e.g., `https://stig.lau.no/2011/`) to see all posts in that year
 
-**Expected outcome:**
-- Each post shows:
-  - Post title (H3)
-  - Date (H2, e.g., "Monday, July 18, 2011")
-  - Snippet of content
-  - Author link ("Stig")
-  - Timestamp link (e.g., "8:57 AM")
-  - Comment count (e.g., "No comments:", "1 comment:")
-  - Share buttons (Email This, BlogThis!, etc.)
+## Finding Posts by Label
 
-### 3. Navigate by Year (Archive Sidebar)
-**Action:** Locate the collapsible year selector in the sidebar (e.g., "▼ 2011"). Click the year to expand/collapse posts from that year.
+1. Home → Right sidebar → **Labels** section
+2. See tags like "Apartment", "Architecture", "balcony", "Oslo", etc.
+3. Click a label to filter posts with that tag
+4. URL becomes: `https://stig.lau.no/search/label/<label-name>`
+5. Results show all posts tagged with that label
+6. Click any post to open full view
 
-**Expected outcome:**
-- Year collapses/expands to show posts from that year
-- Posts listed with dates
-- Example: expanding "2011" shows "Sunday, August 7, 2011" and "Monday, July 18, 2011"
+**Example Labels:**
+- `Apartment` — posts about apartments
+- `Architecture` — architecture discussions
+- `Oslo` — Oslo/property-related posts
+- `balcony` — posts mentioning balconies
+- `3 room` — posts about 3-room apartments
+- `Idea` — general ideas/thoughts
 
-### 4. Filter by Label
-**Action:** Navigate to a label page by:
-- Visiting `https://stig.lau.no/search/label/{LABEL}` (e.g., `/search/label/Architecture`), or
-- Clicking a label from the labels cloud (if visible on sidebar)
+## Reading a Post
 
-**Expected outcome:**
-- Page title: "What's next: {LABEL}" (e.g., "What's next: Architecture")
-- Posts tagged with that label displayed
-- "Show all posts" link visible to return to homepage
+1. Click post title from home or search results
+2. URL becomes: `https://stig.lau.no/YYYY/MM/post-slug.html`
+3. Full post displays with:
+   - Title
+   - Date and author (Stig)
+   - Post body (HTML content, may include embedded links/images)
+   - Labels applied to the post (clickable)
+   - Comments section (read-only; no posting)
+   - "Newer Post" / "Older Post" navigation links
+4. External links in the post are clickable (e.g., to finn.no, lagerboks.no)
 
-### 5. Access an Individual Post
-**Action:** Click a post title or timestamp link (e.g., "Moved to blogger.com" or "8:57 AM")
+## Navigation Between Posts
 
-**Expected outcome:**
-- Navigate to `/{YYYY}/{MM}/{post-slug}.html`
-- Full post content displayed
-- Comment section visible
-- "Newer Post" and "Older Post" navigation links appear
+- **Older Post** link → go to previous (chronologically earlier) post
+- **Newer Post** link → go to next (chronologically later) post
+- **Home** link → return to blog home
 
-## Common Labels
-- Architecture
-- Apartment
-- 3 room
-- balcony
-- Oslo
-- Idea
+## URL Patterns
+
+| Purpose | Pattern | Example |
+|---------|---------|----------|
+| Home | `/` | `https://stig.lau.no/` |
+| Post | `/YYYY/MM/slug.html` | `https://stig.lau.no/2011/07/software-engineering-approach-to.html` |
+| Year archive | `/YYYY/` | `https://stig.lau.no/2011/` |
+| Label search | `/search/label/<label>` | `https://stig.lau.no/search/label/Apartment` |
+| Sitemap | `/sitemap.xml` | `https://stig.lau.no/sitemap.xml` |
+| RSS feeds | `/feeds/posts/default` | `https://stig.lau.no/feeds/posts/default` |
 
 ## Tips
-- Posts are in reverse chronological order (newest first)
-- Blog is low-activity; most posts from 2011 and earlier
-- Archive sidebar allows quick jump to specific years
-- Labels help filter posts by topic
-- No search box present; use label or date-based navigation
 
-## Limitations
-- `/search` path is disallowed for non-Mediapartners-Google agents (per robots.txt), but `/search/label/*` is permitted
-- No full-text search available on the site
+- Use the **Blog Archive** in the sidebar for quick date-based browsing
+- Use **Labels** in the sidebar to find posts about specific topics
+- Post titles are usually descriptive; scan them to find content of interest
+- This blog is inactive; most recent posts are from 2011, with older posts from 2009
+- Comments on posts cannot be posted by you (read-only)
+
+## Expected Challenges
+
+- **Few posts:** Only 2–3 substantive posts; blog is semi-abandoned
+- **Sparse labels:** Not all posts are labeled; some labels appear to apply to only one post
+- **External links:** Posts link to external sites (finn.no, lagerboks.no); these are not under your control
+- **No search box:** Blogger's search function is disabled (robots.txt disallows `/search`); use label filters instead

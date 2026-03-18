@@ -1,8 +1,8 @@
 import { describe, expect, test } from "bun:test";
 import {
-	SiteIdentitySchema,
 	ContentClassificationSchema,
 	SecurityAuditSchema,
+	SiteIdentitySchema,
 	TriageReportSchema,
 } from "../src/schemas/index.js";
 
@@ -35,7 +35,8 @@ describe("ContentClassificationSchema", () => {
 			confidence: 0.87,
 			topics: ["project management", "collaboration"],
 			techStack: ["React", "Next.js"],
-			reasoning: "The site features pricing pages and a signup flow typical of SaaS products.",
+			reasoning:
+				"The site features pricing pages and a signup flow typical of SaaS products.",
 		});
 		expect(result.success).toBe(true);
 	});
@@ -70,6 +71,14 @@ describe("SecurityAuditSchema", () => {
 		const result = SecurityAuditSchema.safeParse({
 			url: "https://example.com",
 			tlsValid: true,
+			transport: {
+				httpUrl: "http://example.com",
+				httpsUrl: "https://example.com",
+				httpStatusCode: 301,
+				httpsStatusCode: 200,
+				httpRedirectsToHttps: true,
+				redirectLocation: "https://example.com/",
+			},
 			headers: [
 				{
 					header: "strict-transport-security",

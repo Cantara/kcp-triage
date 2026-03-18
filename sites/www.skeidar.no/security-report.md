@@ -15,6 +15,24 @@ Skeidar.no, one of Norway's largest furniture e-commerce retailers (operating si
 
 ---
 
+## Verification Update
+
+This report was manually revalidated on 2026-03-18 against live responses from:
+- `https://www.skeidar.no/`
+- `https://www.skeidar.no/checkout/`
+- `https://www.skeidar.no/logg-inn/`
+- `https://www.skeidar.no/find_v2/`
+- `https://www.skeidar.no/episerver/`
+
+Changes after manual verification:
+- Confirmed: missing HSTS, missing CSP, missing `X-Content-Type-Options`, duplicate `cuid` `Set-Cookie` headers, exposed `/find_v2/`, admin-path disclosure via `/episerver/`, the canonical URL bug, and pre-consent `EPiServer_Commerce_AnonymousId`.
+- Adjusted: duplicate `cuid` headers are a server-side defect and response-bloat issue, but a standards-based client stores a single `cuid` value. The earlier persistent "cookie bomb"/431 claim was not reproduced.
+- Adjusted: Google Maps browser keys and Azure Application Insights instrumentation keys are expected to be client-visible in browser integrations. The risk is missing restriction or misuse, not mere visibility.
+- Adjusted: absence of CSRF tokens in static HTML is not enough to conclude that CSRF protection is absent across the application.
+- Removed: the earlier `/checkout/` `Content-Type: text/plain` finding no longer reproduces. On 2026-03-18 the page returned `text/html; charset=utf-8`.
+
+---
+
 ## Critical Findings
 
 ### 1. No HTTP Strict Transport Security (HSTS)
@@ -26,7 +44,7 @@ Without HSTS, the site is vulnerable to:
 - **MITM attacks** — First-time visitors or those typing `skeidar.no` without `https://` can be intercepted
 - **Cookie theft** — Session cookies may be transmitted over unencrypted connections
 
-**Impact:** Customer sessions, cart contents, and personal data (addresses, phone numbers) could be intercepted during checkout.
+**Impact:** Customer sessions, cart contents, and personal data (addresses, phone numbers) could be intercepted during checkout. The site does redirect `http://www.skeidar.no/` to HTTPS with `301`, but without HSTS the first visit is still vulnerable.
 
 **Recommendation:** Add `Strict-Transport-Security: max-age=31536000; includeSubDomains; preload` and submit to the HSTS preload list at hstspreload.org.
 
@@ -52,24 +70,41 @@ Content-Security-Policy-Report-Only: default-src 'self'; script-src 'self' *.goo
 
 ## High Severity Findings
 
-### 3. Cookie Bomb — Duplicate `cuid` Cookie (×13)
+### 3. No Clickjacking Protection on Login and Checkout
 **Severity:** HIGH
-**Observation:** The server sets the cookie `cuid=nb-NO` thirteen (13) times in a single HTTP response.
+**Observation:** Neither `/checkout/` nor `/logg-inn/` returns `X-Frame-Options`, and there is no CSP header with `frame-ancestors`.
 
 **Issues:**
-- **Performance degradation** — Every subsequent request from the browser sends 13 copies of the same cookie, bloating request headers unnecessarily
-- **Potential DoS vector** — Accumulated cookies over multiple page loads could push request headers past server limits (typically 8KB), causing 431 Request Header Fields Too Large errors
-- **Indicates server-side bug** — Multiple middleware layers or misconfigured cookie policies are each setting the same cookie independently
+- **UI redressing / clickjacking** — Sensitive pages can potentially be embedded in a hostile iframe and overlaid with deceptive controls
+- **Higher impact on payment flows** — Login and checkout are precisely the pages where framing protections matter most
+- **No fallback defense** — There is neither legacy `X-Frame-Options` nor modern `frame-ancestors`
 
-**Impact:** Degraded performance for all customers. Potential for customers to be locked out of the site if cookie accumulation exceeds header limits.
+**Impact:** A successful clickjacking setup can trick users into submitting login or checkout actions inside an attacker-controlled page.
 
-**Recommendation:** Audit the cookie-setting middleware stack. The `cuid` cookie should be set exactly once per response, with proper `Path`, `Secure`, and `SameSite` attributes.
+**Recommendation:** Add `Content-Security-Policy: frame-ancestors 'self'` (or `'none'` where appropriate). If CSP rollout will take time, add `X-Frame-Options: SAMEORIGIN` as an interim control.
 
 ---
 
-### 4. Exposed API Keys in Page Source
-**Severity:** HIGH
-**Observation:** The following API keys are embedded in client-side JavaScript on every page:
+## Medium Severity Findings
+
+### 4. Duplicate `cuid` Set-Cookie Headers
+**Severity:** MEDIUM
+**Observation:** The homepage sets `cuid=nb-NO` thirteen (13) times in a single response. `/checkout/` and `/logg-inn/` each set it three times.
+
+**Issues:**
+- **Response bloat** — Duplicate `Set-Cookie` headers add unnecessary bytes to every response
+- **Indicates server-side defect** — Multiple middleware layers or templates appear to set the same cookie repeatedly
+- **Inconsistent intermediary behavior** — Duplicate cookie-setting is unnecessary complexity around caches, debuggers, and client implementations
+
+**Impact:** This is a real quality and hygiene issue, but not a reproduced persistent cookie-bomb condition. A standards-based client stored one `cuid` cookie and sent one `cuid` value back on the next request.
+
+**Recommendation:** Audit the cookie-setting middleware stack. The `cuid` cookie should be set exactly once per response, with explicit `Path`, `Secure`, and `SameSite` attributes.
+
+---
+
+### 5. Client-Exposed Third-Party Keys and Telemetry Identifiers
+**Severity:** MEDIUM
+**Observation:** The following values are embedded in client-side JavaScript or HTML on every page:
 
 | Key | Variable | Value (truncated) |
 |-----|----------|-------------------|
@@ -79,34 +114,35 @@ Content-Security-Policy-Report-Only: default-src 'self'; script-src 'self' *.goo
 | Google Site Verification | meta tag | `KbAmzOmwPiMaR2lt-...` |
 
 **Issues:**
-- **Google Maps API key** — If unrestricted, can be used by third parties to make API calls billed to Skeidar's account. Google Maps API abuse can result in significant unexpected costs.
-- **LipScore API key** — Could be used to submit fake reviews or extract review data
-- **Azure instrumentation key** — Reveals backend infrastructure details
+- **Google Maps API key** — Browser keys are expected to be public, but must be tightly restricted by allowed referrers and enabled APIs
+- **LipScore key** — Public client-side review keys should be checked for origin restrictions, abuse controls, and scope
+- **Azure instrumentation key** — This is a telemetry identifier, not a secret by itself, but it still reveals implementation details
+- **Google site verification** — This token is intended to be public and should not be treated as a credential
 
 **Recommendation:**
 1. Restrict the Google Maps API key to `www.skeidar.no` referrer only (in Google Cloud Console)
 2. Verify LipScore key has domain restrictions
-3. Consider whether Azure instrumentation key needs to be client-visible (Application Insights has server-side alternatives)
+3. Treat Application Insights and Search Console values as public identifiers, not leaked secrets
+4. Remove any wording in downstream reports that implies all client-visible keys are equivalent to exposed credentials
 
 ---
 
-### 5. No CSRF Protection Visible
-**Severity:** HIGH
-**Observation:** No anti-CSRF tokens were found in any inspected page source. The checkout flow, cart operations, and login forms show no evidence of CSRF mitigation.
+### 6. CSRF Posture Requires Authenticated Verification
+**Severity:** MEDIUM
+**Observation:** No anti-CSRF tokens were visible in the anonymous HTML returned for `/`, `/checkout/`, or `/logg-inn/`.
 
 **Issues:**
-- **Cross-Site Request Forgery** — An attacker could craft a page that, when visited by a logged-in Skeidar customer, adds items to their cart, changes their shipping address, or modifies account settings
-- **Episerver has built-in CSRF support** — This suggests it may not be enabled or is handled differently (e.g., SameSite cookies)
+- **Static HTML is insufficient evidence** — Tokens may be injected dynamically, and anonymous pages do not prove how authenticated POST endpoints behave
+- **Observed cookie posture is not strongly SameSite-hardened** — Publicly visible cookies such as `EPiServer_Commerce_AnonymousId`, `EPiStateMarker`, and `cuid` do not carry an explicit `SameSite` attribute, while `ARRAffinitySameSite` is explicitly `SameSite=None`
+- **Sensitive flows exist** — Cart, address, and checkout actions warrant explicit CSRF verification in a logged-in browser session
 
-**Note:** CSRF tokens may be injected dynamically via JavaScript (the checkout is SPA-based), which our static HTML analysis cannot observe. This finding should be verified with browser-based testing.
+**Note:** This remains an open verification item, not a demonstrated exploit condition.
 
-**Recommendation:** Verify CSRF protection is active on all state-changing endpoints. If relying on SameSite cookies, ensure all session cookies have `SameSite=Strict` or `SameSite=Lax`.
+**Recommendation:** Verify CSRF protection on all state-changing endpoints in an authenticated browser session. Ensure actual auth/session cookies use `SameSite=Lax` or `SameSite=Strict`, and enforce anti-forgery tokens or an equivalent verified control on POST/PUT/PATCH/DELETE operations.
 
 ---
 
-## Medium Severity Findings
-
-### 6. Missing X-Content-Type-Options
+### 7. Missing X-Content-Type-Options
 **Severity:** MEDIUM
 **Header:** `X-Content-Type-Options` — missing
 
@@ -116,28 +152,28 @@ Without this header set to `nosniff`, browsers may MIME-sniff responses and inte
 
 ---
 
-### 7. Infrastructure Information Leakage
+### 8. Infrastructure Information Leakage
 **Severity:** MEDIUM
 **Observation:** Multiple infrastructure details are exposed:
 
 | Detail | Source |
 |--------|--------|
-| **Episerver CMS/Commerce** | robots.txt (`/episerver/`), cookie names (`EPiServer_Commerce_AnonymousId`) |
-| **ASP.NET Core** | Response headers, error page patterns |
+| **Episerver CMS/Commerce admin path** | `robots.txt` disallows `/episerver/`; a live request to `/episerver/` redirects to `/Util/Login?ReturnUrl=%2Fepiserver%2F` |
+| **Azure App Service** | `ARRAffinity` and `ARRAffinitySameSite` cookies |
+| **Application Insights** | `request-context: appId=...` header and client telemetry snippet |
 | **Cloudflare CDN** | Response headers |
-| **Azure cloud hosting** | Application Insights instrumentation, Azure CDN references |
 | **Episerver Find** | `/find_v2/` path exposed (returns 401) |
 
-**Impact:** Attackers can target known CVEs for the specific Episerver version, ASP.NET framework, or look for common Episerver misconfigurations.
+**Impact:** None of this is catastrophic alone, but it reduces uncertainty for attackers enumerating admin surfaces and vendor-specific misconfigurations.
 
 **Recommendation:**
-- Remove or mask `Server` headers
 - Block `/find_v2/` at the CDN/WAF level (currently returns 401, but should return 404)
-- Remove `/episerver/` reference from robots.txt if the admin panel is not publicly accessible
+- Review whether `/episerver/` needs to be publicly reachable at all; if not, block or IP-restrict it before the login redirect
+- Reduce low-value infrastructure disclosure where practical (`request-context`, platform-specific cookies, public admin path hints)
 
 ---
 
-### 8. Anonymous Tracking Without Consent
+### 9. Anonymous Tracking Without Consent
 **Severity:** MEDIUM
 **Observation:** The cookie `EPiServer_Commerce_AnonymousId` is set with a UUID value on first visit, before any user consent interaction.
 
@@ -151,7 +187,7 @@ Without this header set to `nosniff`, browsers may MIME-sniff responses and inte
 
 ## Low Severity Findings
 
-### 9. Episerver Find API Exposed
+### 10. Episerver Find API Exposed
 **Severity:** LOW
 **Path:** `/find_v2/`
 **Response:** 401 Unauthorized
@@ -164,29 +200,19 @@ The Episerver Find (search) API endpoint is accessible but requires authenticati
 
 ---
 
-### 10. Missing Security Headers (Informational)
+## Informational Findings
+
+### 11. Missing Additional Security Headers
 **Severity:** INFO
 
 The following headers are absent but recommended:
 
 | Header | Purpose |
 |--------|---------|
-| `X-Frame-Options` | Clickjacking protection (use CSP `frame-ancestors` instead) |
 | `Referrer-Policy` | Controls referrer leakage to third parties |
 | `Permissions-Policy` | Restricts browser features (camera, microphone, geolocation) |
+| `Cross-Origin-Resource-Policy` | Limits cross-origin reuse of site resources where compatible |
 | `X-XSS-Protection` | Legacy XSS filter (superseded by CSP) |
-
----
-
-### 11. Checkout Content-Type Misconfiguration
-**Severity:** INFO
-**Path:** `/checkout/`
-**Observation:** The checkout page returns `Content-Type: text/plain` instead of `text/html`.
-
-While browsers may still render HTML, this is a misconfiguration that could affect:
-- Automated accessibility tools
-- Screen readers
-- Security scanners that respect Content-Type
 
 ---
 
@@ -212,15 +238,15 @@ Login uses phone number as the primary identifier (dynamically loaded via JavaSc
 | Priority | Finding | Effort |
 |----------|---------|--------|
 | 1 | Add HSTS header | Low — single header configuration |
-| 2 | Add CSP header (report-only first) | Medium — requires audit of script sources |
-| 3 | Fix cookie duplication (`cuid` ×13) | Low — middleware configuration fix |
-| 4 | Add X-Content-Type-Options | Low — single header |
-| 5 | Restrict Google Maps API key | Low — Google Cloud Console |
-| 6 | Verify CSRF protection | Medium — requires code review |
-| 7 | Remove infrastructure leakage | Medium — header/CDN configuration |
-| 8 | Review cookie consent timing | Medium — legal + technical review |
-| 9 | Fix canonical URL bug | Low — template fix |
-| 10 | Block /find_v2/ properly | Low — CDN/WAF rule |
+| 2 | Add CSP header with `frame-ancestors` (report-only first) | Medium — requires audit of script and framing sources |
+| 3 | Add clickjacking protection on `/checkout/` and `/logg-inn/` | Low — header policy change |
+| 4 | Add `X-Content-Type-Options: nosniff` | Low — single header |
+| 5 | Fix duplicate `cuid` cookie setting and add `SameSite` where appropriate | Low — middleware configuration fix |
+| 6 | Verify CSRF protection in authenticated flows and harden auth/session cookies | Medium — requires browser/code review |
+| 7 | Review client-side key restrictions (Google Maps, LipScore) | Low — vendor console / configuration review |
+| 8 | Reduce admin/search surface disclosure (`/episerver/`, `/find_v2/`) | Medium — app + CDN/WAF changes |
+| 9 | Review consent gating for `EPiServer_Commerce_AnonymousId` | Medium — legal + technical review |
+| 10 | Fix canonical URL bug | Low — template fix |
 
 ---
 
@@ -230,7 +256,7 @@ This assessment was conducted using:
 - HTTP header analysis via programmatic requests with standard User-Agent
 - HTML source code inspection of served pages
 - robots.txt and sitemap analysis
-- Cookie analysis across multiple page requests
+- Cookie analysis across multiple page requests, including client-side cookie-jar verification
 - Endpoint probing of common Episerver paths
 
 **Limitations:**

@@ -79,21 +79,18 @@ units:
     hints:
       load_strategy: lazy
       priority: supplementary
-  - id: skill-read-post
-    path: skills/read-post.md
-    intent: How to read post on stig.lau.no
-    scope: module
+  - id: unknowns
+    path: unknowns.md
+    intent: What suspected but unverified features or APIs exist on stig.lau.no?
+    scope: global
     audience:
       - agent
+      - developer
     kind: knowledge
     format: markdown
     validated: 2026-03-18
     depends_on:
       - site-overview
-    triggers:
-      - read-post
-      - read
-      - post
     hints:
       load_strategy: lazy
       priority: supplementary
