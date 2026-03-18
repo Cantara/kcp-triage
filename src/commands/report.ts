@@ -42,6 +42,8 @@ function renderSummary(r: TriageReport): void {
 	console.log(`  Topics:     ${r.classification.topics.join(", ")}`);
 	console.log(`  Tech Stack: ${r.classification.techStack.join(", ") || chalk.dim("none detected")}`);
 	console.log(`  Security:   ${gradeColor(r.security.overallGrade)}`);
+	console.log(`  Interaction: ${r.synthesis.interactionModel}`);
+	console.log(`  Narrative:   ${r.synthesis.narrative}`);
 	console.log(`  Pages:      ${r.crawl.pages.length} crawled`);
 	console.log();
 
@@ -80,6 +82,19 @@ function renderMarkdown(r: TriageReport): string {
 		`- **Tech Stack:** ${r.classification.techStack.join(", ") || "none detected"}`,
 		`- **Reasoning:** ${r.classification.reasoning}`,
 		"",
+		"## Synthesis",
+		"",
+		`${r.synthesis.narrative}`,
+		"",
+		`**Interaction Model:** ${r.synthesis.interactionModel}`,
+		"",
+		`**Key Capabilities:**`,
+		...r.synthesis.keyCapabilities.map((c) => `- ${c}`),
+		"",
+		...(r.synthesis.apiEndpoints.length > 0
+			? [`**API Endpoints:**`, ...r.synthesis.apiEndpoints.map((e) => `- ${e}`), ""]
+			: []),
+		...(r.synthesis.authentication ? [`**Authentication:** ${r.synthesis.authentication}`, ""] : []),
 		"## Security Audit",
 		"",
 		`**Overall Grade:** ${r.security.overallGrade}`,

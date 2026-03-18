@@ -8,6 +8,7 @@ export const TaskRoutingSchema = z.object({
 	classify: ModelTierSchema.default("sonnet"),
 	securityAudit: ModelTierSchema.default("haiku"),
 	synthesize: ModelTierSchema.default("sonnet"),
+	generate: ModelTierSchema.default("haiku"),
 });
 export type TaskRouting = z.infer<typeof TaskRoutingSchema>;
 
@@ -18,6 +19,8 @@ export const OrchestratorConfigSchema = z.object({
 	maxCrawlPages: z.number().int().positive().default(20),
 	/** Timeout per HTTP request in ms */
 	requestTimeoutMs: z.number().int().positive().default(10_000),
+	/** Politeness delay between requests in ms (higher = more polite) */
+	politenessDelayMs: z.number().int().nonnegative().default(500),
 	/** Where to write the final triage report */
 	outputDir: z.string().default("./triage-output"),
 	/** Anthropic API key — falls back to ANTHROPIC_API_KEY env var */
@@ -26,8 +29,8 @@ export const OrchestratorConfigSchema = z.object({
 export type OrchestratorConfig = z.infer<typeof OrchestratorConfigSchema>;
 
 export const MODEL_IDS: Record<ModelTier, string> = {
-	opus: "claude-opus-4-20250514",
-	sonnet: "claude-sonnet-4-20250514",
+	opus: "claude-opus-4-6",
+	sonnet: "claude-sonnet-4-6",
 	haiku: "claude-haiku-4-5-20251001",
 };
 

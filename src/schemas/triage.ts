@@ -58,6 +58,42 @@ export const ContentClassificationSchema = z.object({
 });
 export type ContentClassification = z.infer<typeof ContentClassificationSchema>;
 
+// ─── Site Synthesis ──────────────────────────────────────────────
+export const SiteSynthesisSchema = z.object({
+	narrative: z.string().describe("Human-readable summary of what the site does and who it is for"),
+	apiEndpoints: z.array(z.string()).describe("Discovered API or service endpoints"),
+	authentication: z.string().optional().describe("Detected authentication method (e.g. OAuth, API key, none)"),
+	keyCapabilities: z.array(z.string()).describe("Top capabilities/features of the site"),
+	interactionModel: z.enum(["read-only", "authenticated", "api-first", "cms", "unknown"]).describe("How agents would interact with this site"),
+});
+export type SiteSynthesis = z.infer<typeof SiteSynthesisSchema>;
+
+// ─── Site Project ────────────────────────────────────────────────
+export const SiteProjectFileSchema = z.object({
+	path: z.string().describe("Relative file path within the site directory"),
+	content: z.string().describe("File content"),
+});
+
+export const ApiEntrySchema = z.object({
+	name: z.string(),
+	path: z.string().describe("Relative file path, e.g. apis/products-api.md"),
+	content: z.string(),
+	confidence: z.enum(["verified", "inferred", "rumor"]),
+});
+
+export const SiteProjectSchema = z.object({
+	claudeMd: z.string().describe("CLAUDE.md content — LLM orientation for working with this site"),
+	readmeMd: z.string().describe("README.md — human-readable project card"),
+	sitemapMd: z.string().describe("sitemap.md — structured navigation model"),
+	skills: z.array(z.object({
+		name: z.string().describe("Skill filename without extension, e.g. navigate"),
+		content: z.string().describe("Skill markdown content"),
+	})),
+	apis: z.array(ApiEntrySchema),
+	unknowns: z.string().optional().describe("unknowns.md content — empty/absent if no unknowns"),
+});
+export type SiteProject = z.infer<typeof SiteProjectSchema>;
+
 // ─── Security Headers Audit ──────────────────────────────────────
 export const SecurityHeaderCheckSchema = z.object({
 	header: z.string(),
@@ -91,6 +127,7 @@ export const TriageReportSchema = z.object({
 	crawl: CrawlResultSchema,
 	classification: ContentClassificationSchema,
 	security: SecurityAuditSchema,
+	synthesis: SiteSynthesisSchema,
 	generatedAt: z.string().datetime(),
 	orchestrationMeta: z.object({
 		orchestratorModel: z.string(),

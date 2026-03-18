@@ -1,0 +1,151 @@
+kcp_version: "0.10"
+project: www.skeidar.no
+version: 1.0.0
+updated: 2026-03-18
+language: nb
+indexing: read-only
+rate_limits:
+  note: Respect robots.txt crawl-delay; minimum 500ms between requests
+units:
+  - id: site-overview
+    path: CLAUDE.md
+    intent: What is www.skeidar.no and how should an AI agent interact with it?
+    scope: global
+    audience:
+      - agent
+      - developer
+    kind: knowledge
+    format: markdown
+    validated: 2026-03-18
+    update_frequency: monthly
+    hints:
+      load_strategy: eager
+      priority: critical
+      density: dense
+  - id: site-readme
+    path: README.md
+    intent: What is the www.skeidar.no triage project?
+    scope: global
+    audience:
+      - human
+      - developer
+    kind: knowledge
+    format: markdown
+    validated: 2026-03-18
+    hints:
+      load_strategy: lazy
+      priority: supplementary
+  - id: sitemap
+    path: sitemap.md
+    intent: What are the URL patterns and navigation structure of www.skeidar.no?
+    scope: global
+    audience:
+      - agent
+    kind: knowledge
+    format: markdown
+    validated: 2026-03-18
+    depends_on:
+      - site-overview
+    hints:
+      load_strategy: eager
+      priority: critical
+  - id: triage-report
+    path: triage-report.json
+    intent: What are the raw crawl, classification, and security audit results for www.skeidar.no?
+    scope: global
+    audience:
+      - developer
+    kind: schema
+    format: json
+    validated: 2026-03-18
+    hints:
+      load_strategy: never
+      priority: reference
+      density: verbose
+  - id: skill-navigate
+    path: skills/navigate.md
+    intent: How do I navigate on www.skeidar.no?
+    scope: module
+    audience:
+      - agent
+    kind: knowledge
+    format: markdown
+    validated: 2026-03-18
+    depends_on:
+      - site-overview
+    triggers:
+      - navigate
+      - navigate
+    hints:
+      load_strategy: lazy
+      priority: supplementary
+  - id: skill-order-flow
+    path: skills/order-flow.md
+    intent: How do I order flow on www.skeidar.no?
+    scope: module
+    audience:
+      - agent
+    kind: knowledge
+    format: markdown
+    validated: 2026-03-18
+    depends_on:
+      - site-overview
+    triggers:
+      - order-flow
+      - order
+      - flow
+    hints:
+      load_strategy: lazy
+      priority: supplementary
+  - id: skill-campaigns-and-deals
+    path: skills/campaigns-and-deals.md
+    intent: How do I campaigns and deals on www.skeidar.no?
+    scope: module
+    audience:
+      - agent
+    kind: knowledge
+    format: markdown
+    validated: 2026-03-18
+    depends_on:
+      - site-overview
+    triggers:
+      - campaigns-and-deals
+      - campaigns
+      - and
+      - deals
+    hints:
+      load_strategy: lazy
+      priority: supplementary
+  - id: skill-customer-service
+    path: skills/customer-service.md
+    intent: How do I customer service on www.skeidar.no?
+    scope: module
+    audience:
+      - agent
+    kind: knowledge
+    format: markdown
+    validated: 2026-03-18
+    depends_on:
+      - site-overview
+    triggers:
+      - customer-service
+      - customer
+      - service
+    hints:
+      load_strategy: lazy
+      priority: supplementary
+  - id: unknowns
+    path: unknowns.md
+    intent: What suspected but unverified features or APIs exist on www.skeidar.no?
+    scope: global
+    audience:
+      - agent
+      - developer
+    kind: knowledge
+    format: markdown
+    validated: 2026-03-18
+    depends_on:
+      - site-overview
+    hints:
+      load_strategy: lazy
+      priority: supplementary

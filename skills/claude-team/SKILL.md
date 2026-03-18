@@ -10,8 +10,8 @@ description: "Multi-agent delegation patterns for kcp-triage. Use when coordinat
 | Tier | Model | Cost | Use For |
 |------|-------|------|---------|
 | Opus | claude-opus-4-6 | $$$ | Architecture, hard reasoning, orchestration |
-| Sonnet | claude-sonnet-4-5 | $$ | Implementation, classification, synthesis |
-| Haiku | claude-haiku-4-5 | $ | Crawling, parsing, extraction, quick tasks |
+| Sonnet | claude-sonnet-4-6 | $$ | Implementation, classification, synthesis |
+| Haiku | claude-haiku-4-5-20251001 | $ | Crawling, parsing, extraction, project generation |
 
 **Default to cheapest model.** Escalate only when quality requires it.
 

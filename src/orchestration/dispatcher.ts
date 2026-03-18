@@ -23,13 +23,41 @@ export class Dispatcher {
 		system: string;
 		prompt: string;
 		parse: (raw: string) => T;
+		maxTokens?: number;
 	}): Promise<TaskResult<T>> {
 		const model = MODEL_IDS[opts.tier];
+		const maxTokens = opts.maxTokens ?? 4096;
 		const start = performance.now();
+
+		// Use streaming for large token limits to avoid SDK timeout errors
+		if (maxTokens > 8192) {
+			const stream = this.client.messages.stream({
+				model,
+				max_tokens: maxTokens,
+				system: opts.system,
+				messages: [{ role: "user", content: opts.prompt }],
+			});
+			const response = await stream.finalMessage();
+			const durationMs = Math.round(performance.now() - start);
+			const text = response.content
+				.filter((block): block is Anthropic.TextBlock => block.type === "text")
+				.map((block) => block.text)
+				.join("\n");
+
+			return {
+				data: opts.parse(text),
+				model,
+				durationMs,
+				tokenUsage: {
+					input: response.usage.input_tokens,
+					output: response.usage.output_tokens,
+				},
+			};
+		}
 
 		const response = await this.client.messages.create({
 			model,
-			max_tokens: 4096,
+			max_tokens: maxTokens,
 			system: opts.system,
 			messages: [{ role: "user", content: opts.prompt }],
 		});

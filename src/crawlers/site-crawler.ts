@@ -4,6 +4,7 @@ import type { CrawlPage, CrawlResult, SiteIdentity } from "../schemas/index.js";
 export interface CrawlOptions {
 	maxPages: number;
 	timeoutMs: number;
+	politenessDelayMs?: number;
 }
 
 /**
@@ -14,7 +15,14 @@ export async function crawlSite(url: string, options: CrawlOptions): Promise<Cra
 	const base = new URL(url);
 	const visited = new Set<string>();
 	const pages: CrawlPage[] = [];
-	const queue: string[] = [base.href];
+	const delay = options.politenessDelayMs ?? 500;
+
+	// Strip fragment from a URL to avoid crawling the same page twice
+	const stripFragment = (u: string): string => {
+		try { const parsed = new URL(u); parsed.hash = ""; return parsed.href; } catch { return u; }
+	};
+
+	const queue: string[] = [stripFragment(base.href)];
 
 	while (queue.length > 0 && pages.length < options.maxPages) {
 		const current = queue.shift();
@@ -27,13 +35,14 @@ export async function crawlSite(url: string, options: CrawlOptions): Promise<Cra
 
 			// Politeness delay between requests
 			if (pages.length < options.maxPages) {
-				await new Promise((resolve) => setTimeout(resolve, 500));
+				await new Promise((resolve) => setTimeout(resolve, delay));
 			}
 
 			// Enqueue same-origin links
 			for (const link of page.links) {
 				try {
 					const resolved = new URL(link.href, current);
+					resolved.hash = ""; // strip fragments
 					if (resolved.hostname === base.hostname && !visited.has(resolved.href)) {
 						queue.push(resolved.href);
 					}
@@ -47,14 +56,43 @@ export async function crawlSite(url: string, options: CrawlOptions): Promise<Cra
 		}
 	}
 
+	// After BFS loop, fetch robots.txt
+	let robotsTxt: string | undefined;
+	let sitemapUrls: string[] = [];
+	try {
+		const robotsUrl = new URL("/robots.txt", base).href;
+		const robotsRes = await fetch(robotsUrl, {
+			headers: { "User-Agent": "kcp-triage-bot/0.1.0 (+https://github.com/StigLau/kcp-triage)" },
+			signal: AbortSignal.timeout(5000),
+		});
+		if (robotsRes.ok) {
+			robotsTxt = await robotsRes.text();
+			// Extract sitemap URLs from robots.txt
+			for (const line of robotsTxt.split("\n")) {
+				const m = line.match(/^Sitemap:\s*(.+)/i);
+				if (m && m[1]) sitemapUrls.push(m[1].trim());
+			}
+		}
+	} catch {
+		// ignore
+	}
+
+	// Populate description and language from first page's meta tags
+	const firstPage = pages[0];
+	const description =
+		firstPage?.metaTags["description"] ?? firstPage?.metaTags["og:description"];
+	const language = firstPage?.metaTags["og:locale"];
+
 	const site: SiteIdentity = {
 		url: base.href,
 		domain: base.hostname,
-		title: pages[0]?.title,
+		title: firstPage?.title,
+		description,
+		language,
 		discoveredAt: new Date().toISOString(),
 	};
 
-	return { site, pages };
+	return { site, pages, robotsTxt, sitemapUrls: sitemapUrls.length > 0 ? sitemapUrls : undefined };
 }
 
 async function fetchAndParse(url: string, timeoutMs: number): Promise<CrawlPage> {
@@ -82,7 +120,8 @@ async function fetchAndParse(url: string, timeoutMs: number): Promise<CrawlPage>
 				text: $(el).text().trim(),
 				rel: $(el).attr("rel"),
 			}))
-			.get();
+			.get()
+			.slice(0, 50);
 
 		const metaTags: Record<string, string> = {};
 		$("meta[name], meta[property]").each((_, el) => {

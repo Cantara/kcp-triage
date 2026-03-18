@@ -32,8 +32,8 @@ The tier names map to specific Anthropic model strings in `MODEL_IDS`:
 
 | Tier   | Model ID                       |
 |--------|--------------------------------|
-| opus   | `claude-opus-4-20250514`       |
-| sonnet | `claude-sonnet-4-20250514`     |
+| opus   | `claude-opus-4-6`              |
+| sonnet | `claude-sonnet-4-6`            |
 | haiku  | `claude-haiku-4-5-20251001`    |
 
 ## Init-Generated Config

@@ -57,9 +57,10 @@ If LLM-powered, add routing entry to `src/orchestration/config.ts`.
 
 In `src/commands/run.ts`:
 1. Import analyzer
-2. Add spinner + call in pipeline sequence
-3. Add result to `TriageReport` object
-4. If LLM-powered, add `delegatedTasks` entry
+2. Add spinner + call in pipeline sequence (before Step 5: Generate Project)
+3. Pass result to `generateSiteProject()` so the project generator can incorporate it
+4. Add result to `TriageReport` object
+5. If LLM-powered, add `delegatedTasks` entry
 
 ## Step 5: Wire into Report
 
@@ -67,7 +68,12 @@ In `src/commands/report.ts`:
 1. Add section to `renderSummary()`
 2. Add section to `renderMarkdown()`
 
-## Step 6: Create Skill
+## Step 6: Wire into KCP Manifest
+
+In `src/generators/kcp-manifest.ts`:
+- If the analyzer produces a file, add it as a KCP unit with appropriate intent, scope, audience
+
+## Step 7: Create Skill
 
 Create `skills/<name>/SKILL.md` with frontmatter, key files, tuning recipes.
 
@@ -75,10 +81,12 @@ Create `skills/<name>/SKILL.md` with frontmatter, key files, tuning recipes.
 
 - [ ] Zod schema in `src/schemas/triage.ts` with types exported
 - [ ] Schema added to `TriageReportSchema` (as optional)
-- [ ] Analyzer in `src/analyzers/`
-- [ ] Wired into `src/commands/run.ts`
+- [ ] Analyzer in `src/analyzers/` or `src/generators/`
+- [ ] Wired into `src/commands/run.ts` (before project generation if the data feeds into generated skills)
 - [ ] Wired into `src/commands/report.ts`
-- [ ] If LLM-powered: routing entry in `config.ts`
+- [ ] If LLM-powered: routing entry in `config.ts`, use `maxTokens` param if output may be large
+- [ ] If LLM-powered with large output: dispatcher uses streaming automatically (>8192 tokens)
+- [ ] Indexed in KCP manifest (`src/generators/kcp-manifest.ts`)
 - [ ] Skill in `skills/`
 - [ ] Test in `tests/`
 - [ ] `bun run typecheck` passes
