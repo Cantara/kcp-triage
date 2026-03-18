@@ -55,3 +55,12 @@ The report includes `orchestrationMeta` — which model handled which task, dura
 5. Create skill in `skills/`
 6. Update `TriageReportSchema`
 7. Update `src/commands/report.ts` to render new data
+
+## Known Limitations
+
+See GitHub issues for planned improvements:
+- #1: LLM retry logic for parse failures
+- #2: robots.txt enforcement
+- #3: sitemap.xml parsing
+- #4: Better error handling in Dispatcher
+- #5: Report synthesis step

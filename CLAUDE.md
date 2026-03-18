@@ -69,3 +69,5 @@ sites/                         # Generated per-site projects
 - Pipeline steps in `src/commands/run.ts` use ora spinners for progress
 - Generated site output goes to `sites/<domain>/`, never project root
 - Use KCP Memory (`mcp__kcp-memory__*`) to record and retrieve cross-session learnings
+- Crawler includes 500ms politeness delay and User-Agent header
+- API key validated before crawling (fail fast)

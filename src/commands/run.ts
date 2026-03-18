@@ -28,6 +28,14 @@ export async function runPipeline(configPath: string, opts: RunOpts): Promise<vo
 		return;
 	}
 
+	// Validate API key before crawling
+	const apiKey = config.apiKey ?? process.env.ANTHROPIC_API_KEY;
+	if (!apiKey) {
+		console.error(chalk.red("\nError: ANTHROPIC_API_KEY not set"));
+		console.error(chalk.dim("Set it via environment variable or in triage.config.json"));
+		process.exit(1);
+	}
+
 	const dispatcher = new Dispatcher(config);
 
 	// ── Step 1: Crawl ────────────────────────────────────────────

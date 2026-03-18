@@ -17,6 +17,7 @@ bun run dev init https://example.com -o sites/example-com
 bun run dev run --config sites/example-com/triage.config.json --dry-run
 
 # 3. Execute (requires ANTHROPIC_API_KEY)
+export ANTHROPIC_API_KEY=sk-ant-...
 bun run dev run --config sites/example-com/triage.config.json
 
 # 4. View results
@@ -48,6 +49,22 @@ In `triage.config.json`:
 - Content classification (category, topics, tech stack, confidence)
 - Security audit (header checks, overall grade)
 - Orchestration metadata (models used, duration, tokens)
+
+## Troubleshooting
+
+**"Could not resolve authentication method"**
+- Set `ANTHROPIC_API_KEY` environment variable before running
+- Or add `"apiKey": "sk-ant-..."` to triage.config.json (not recommended for committed configs)
+
+**Crawl succeeds but classification fails**
+- Check API key is valid
+- Check network connectivity to api.anthropic.com
+- See GitHub issues for retry logic improvements
+
+**Incomplete crawl (fewer pages than expected)**
+- Some pages may have failed (check console warnings)
+- Adjust `maxCrawlPages` in config
+- Consider robots.txt restrictions (see issue #2)
 
 ## After Scanning
 

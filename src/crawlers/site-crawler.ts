@@ -25,6 +25,11 @@ export async function crawlSite(url: string, options: CrawlOptions): Promise<Cra
 			const page = await fetchAndParse(current, options.timeoutMs);
 			pages.push(page);
 
+			// Politeness delay between requests
+			if (pages.length < options.maxPages) {
+				await new Promise((resolve) => setTimeout(resolve, 500));
+			}
+
 			// Enqueue same-origin links
 			for (const link of page.links) {
 				try {
@@ -57,7 +62,10 @@ async function fetchAndParse(url: string, timeoutMs: number): Promise<CrawlPage>
 	const timer = setTimeout(() => controller.abort(), timeoutMs);
 
 	try {
-		const res = await fetch(url, { signal: controller.signal });
+		const res = await fetch(url, {
+			signal: controller.signal,
+			headers: { "User-Agent": "kcp-triage-bot/0.1.0 (+https://github.com/StigLau/kcp-triage)" },
+		});
 		const html = await res.text();
 		const $ = cheerio.load(html);
 
