@@ -134,6 +134,21 @@ units:
     hints:
       load_strategy: lazy
       priority: supplementary
+  - id: security-report
+    path: security-report.md
+    intent: What are the security vulnerabilities and recommendations for www.skeidar.no?
+    scope: global
+    audience:
+      - developer
+      - agent
+    kind: knowledge
+    format: markdown
+    validated: 2026-03-18
+    depends_on:
+      - site-overview
+    hints:
+      load_strategy: lazy
+      priority: supplementary
   - id: unknowns
     path: unknowns.md
     intent: What suspected but unverified features or APIs exist on www.skeidar.no?

@@ -81,9 +81,19 @@ Each skill below corresponds to a focused how-to document in the `skills/` direc
 4. **customer-service** – Accessing contact info, FAQs, returns/complaints, and financing
 
 ## Security Note
-**Grade: F** (per audit)  
-Missing: Strict-Transport-Security, Content-Security-Policy, X-Content-Type-Options.  
-Recommend: HTTPS only, CSP headers, and security headers hardening (beyond agent scope).
+**Grade: F** (per audit — see `security-report.md` for full details)
+
+Critical issues:
+- **No HSTS** — vulnerable to MITM/SSL stripping attacks
+- **No CSP** — no defense against XSS or supply chain script injection
+- **Cookie bomb** — `cuid` cookie set 13× per response (performance/DoS vector)
+- **Exposed API keys** — Google Maps, LipScore, Azure instrumentation in page source
+- **No visible CSRF tokens** — state-changing forms may lack CSRF protection
+- **Infrastructure leakage** — Episerver, ASP.NET, Azure, Cloudflare all identifiable
+
+Additional: missing X-Content-Type-Options, anonymous tracking cookie before consent (GDPR concern), `/find_v2/` endpoint exposed, canonical URL double-protocol bug.
+
+Agents operating on this site should be aware of the weak security posture — do not trust that session isolation or transport security is properly enforced.
 
 ## Interaction Constraints
 - **No direct API calls** for shopping operations detected; all e-commerce flows use form submissions and browser sessions
