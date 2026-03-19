@@ -7,10 +7,16 @@ node_modules/
 
 # Triaged sites — each user generates their own, never commit back
 sites/*/
+
+# Site credentials
+sites/**/.env
 mnt/
 
 # Per-installation progression log
 triage-log.yaml
+
+# Export skill (private repo only)
+skills/export-cantara/
 
 # Temporary files
 *.log

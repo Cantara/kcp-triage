@@ -62,7 +62,7 @@ export async function crawlSite(url: string, options: CrawlOptions): Promise<Cra
 	try {
 		const robotsUrl = new URL("/robots.txt", base).href;
 		const robotsRes = await fetch(robotsUrl, {
-			headers: { "User-Agent": "kcp-triage-bot/0.1.0 (+https://github.com/StigLau/kcp-triage)" },
+			headers: { "User-Agent": "kcp-triage-bot/0.1.0 (+https://github.com/Cantara/kcp-triage)" },
 			signal: AbortSignal.timeout(5000),
 		});
 		if (robotsRes.ok) {
@@ -102,7 +102,7 @@ async function fetchAndParse(url: string, timeoutMs: number): Promise<CrawlPage>
 	try {
 		const res = await fetch(url, {
 			signal: controller.signal,
-			headers: { "User-Agent": "kcp-triage-bot/0.1.0 (+https://github.com/StigLau/kcp-triage)" },
+			headers: { "User-Agent": "kcp-triage-bot/0.1.0 (+https://github.com/Cantara/kcp-triage)" },
 		});
 		const html = await res.text();
 		const $ = cheerio.load(html);
