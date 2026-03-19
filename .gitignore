@@ -5,9 +5,8 @@
 dist/
 node_modules/
 
-# Generated output (from running triage commands)
-sites/*/triage-report.json
-sites/*/triage.config.json
+# Triaged sites — each user generates their own, never commit back
+sites/*/
 mnt/
 
 # Per-installation progression log
