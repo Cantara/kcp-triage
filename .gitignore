@@ -10,6 +10,9 @@ sites/*/triage-report.json
 sites/*/triage.config.json
 mnt/
 
+# Per-installation progression log
+triage-log.yaml
+
 # Temporary files
 *.log
 .env

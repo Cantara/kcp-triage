@@ -21,7 +21,7 @@ bun run dev run --config sites/example-com/triage.config.json --dry-run
 
 # 4. Execute (requires ANTHROPIC_API_KEY)
 export ANTHROPIC_API_KEY=sk-ant-...
-bun run dev run --config sites/example-com/triage.config.json
+bun run dev run --config sites/example-com/triage.config.json --goal "Initial triage of example.com"
 
 # 5. View results
 bun run dev report --config sites/example-com/triage.config.json -f summary
@@ -37,6 +37,11 @@ bun run dev report --config sites/example-com/triage.config.json -f markdown
 5. **Generate Project** (`src/analyzers/project-generator.ts`): LLM generates site-specific CLAUDE.md, README, sitemap, skills, API inventory, unknowns. Default: haiku (32K token limit, streaming).
 6. **KCP Manifest** (`src/generators/kcp-manifest.ts`): Deterministic generation of `knowledge.yaml` indexing all project files per KCP spec v0.10.
 7. **Assemble Report** (`src/commands/run.ts`): Combine all results into `triage-report.json`.
+8. **Triage Log** (`src/generators/triage-log.ts`): Appends a summary entry to `triage-log.yaml` at the project root. Records domain, goal, results, and arrays for learnings/problems/follow-ups.
+
+### The `--goal` flag
+
+Pass `--goal "reason for this triage"` to record why you're scanning. The goal is stored in `triage-log.yaml` and helps future sessions understand the intent behind each run.
 
 ## Configuration
 
@@ -67,6 +72,8 @@ sites/<domain>/
   apis/                  # API inventory with confidence levels
   unknowns.md            # Suspected but unverified features (if any)
 ```
+
+Additionally, `triage-log.yaml` at the project root is updated with a summary entry.
 
 ## Model Routing (cost optimization)
 
