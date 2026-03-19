@@ -10,10 +10,12 @@ import { auditSecurityHeaders } from "../analyzers/security-headers.js";
 import { synthesizeSite } from "../analyzers/site-synthesizer.js";
 import { generateSiteProject } from "../analyzers/project-generator.js";
 import { generateKcpManifest } from "../generators/kcp-manifest.js";
+import { appendTriageLog } from "../generators/triage-log.js";
 import type { TriageReport } from "../schemas/index.js";
 
 interface RunOpts {
 	dryRun: boolean;
+	goal?: string;
 }
 
 export async function runPipeline(configPath: string, opts: RunOpts): Promise<void> {
@@ -31,6 +33,7 @@ export async function runPipeline(configPath: string, opts: RunOpts): Promise<vo
 		console.log(`  5. Generate site project via ${chalk.magenta(config.routing.generate)}`);
 		console.log(`  6. Generate KCP knowledge.yaml manifest`);
 		console.log(`  7. Assemble report`);
+		console.log(`  8. Update triage log`);
 		return;
 	}
 
@@ -143,4 +146,9 @@ export async function runPipeline(configPath: string, opts: RunOpts): Promise<vo
 	const reportPath = join(outputDir, "triage-report.json");
 	await writeFile(reportPath, JSON.stringify(report, null, 2));
 	console.log(`\n${chalk.green("✓")} Report written to ${chalk.cyan(reportPath)}`);
+
+	// ── Step 8: Update triage log ────────────────────────────────
+	const logSpinner = ora("Updating triage log…").start();
+	const logPath = await appendTriageLog(outputDir, report, opts.goal);
+	logSpinner.succeed(`Triage log updated: ${chalk.cyan(logPath)}`);
 }

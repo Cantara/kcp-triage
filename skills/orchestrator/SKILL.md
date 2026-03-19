@@ -64,6 +64,7 @@ The report includes `orchestrationMeta` — which model handled which task, dura
 
 | You want to… | Read |
 |--------------|------|
+| Start a new feature (branch + issue) | `skills/sdd-workflow/SKILL.md` |
 | Run a full site scan | `skills/scan-site/SKILL.md` |
 | Understand KCP output format | `skills/generate-kcp/SKILL.md` |
 | Delegate to multi-agent team | `skills/claude-team/SKILL.md` |

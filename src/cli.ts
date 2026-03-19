@@ -28,9 +28,13 @@ program
 	.description("Run the full triage pipeline on an initialised project")
 	.option("-c, --config <path>", "Path to triage config", "./triage.config.json")
 	.option("--dry-run", "Print the execution plan without calling LLMs")
-	.action(async (opts: { config: string; dryRun?: boolean }) => {
+	.option("--goal <text>", "Why this triage is being run (recorded in triage-log.yaml)")
+	.action(async (opts: { config: string; dryRun?: boolean; goal?: string }) => {
 		const { runPipeline } = await import("./commands/run.js");
-		await runPipeline(opts.config, { dryRun: opts.dryRun ?? false });
+		await runPipeline(opts.config, {
+			dryRun: opts.dryRun ?? false,
+			...(opts.goal !== undefined ? { goal: opts.goal } : {}),
+		});
 	});
 
 // ─── report: display or export the latest triage report ─────────

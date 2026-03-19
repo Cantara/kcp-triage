@@ -8,7 +8,20 @@ Two-layer system:
 - **Builder** (`src/`): CLI pipeline that crawls, classifies, audits, and reports on websites
 - **Sites** (`sites/<domain>/`): Per-site generated projects with CLAUDE.md, skills, KCP artifacts
 
-## SDD Methodology
+## SDD Workflow
+
+Every non-trivial change follows Spec-Driven Development on a feature branch with a tracking issue.
+
+### Branch + Issue Flow
+
+1. **Create issue** — `gh issue create --title "Add <feature>" --body "..."` describing the goal
+2. **Branch from main** — `git checkout -b feat/<short-name>` (or `fix/`, `refactor/`)
+3. **Write spec** — `docs/specs/<feature>.md` with motivation, schema sketch, acceptance criteria
+4. **Implement** — Spec → Schema → Code → Skill → Test (see steps below)
+5. **PR + review** — `gh pr create` linking the issue. PR body summarizes what changed and why.
+6. **Merge** — Squash-merge to main, issue auto-closes via `Closes #N`
+
+### SDD Steps (within a branch)
 
 Spec → Schema → Implement → Skill → Test
 
@@ -18,6 +31,11 @@ Spec → Schema → Implement → Skill → Test
 4. Wire into `src/commands/run.ts` pipeline
 5. Create/update skill in `skills/`
 6. Add tests in `tests/`
+
+### Commit Convention
+
+- Prefix: `feat:`, `fix:`, `refactor:`, `docs:`, `test:`, `chore:`
+- Reference issue: `feat: add SEO analyzer (#12)`
 
 ## Claude Team Delegation
 

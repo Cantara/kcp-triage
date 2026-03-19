@@ -178,3 +178,31 @@ export const TriageReportSchema = z.object({
 	}),
 });
 export type TriageReport = z.infer<typeof TriageReportSchema>;
+
+// ─── Triage Log ──────────────────────────────────────────────────
+export const TriageLogEntrySchema = z.object({
+	id: z.string().describe("Unique entry ID: <domain>-<ISO date>"),
+	timestamp: z.string().datetime(),
+	domain: z.string(),
+	url: z.string().url(),
+	goal: z.string().describe("Why this triage was initiated — user intent or automation trigger"),
+	pipelineVersion: z.string().describe("kcp-triage version at time of run"),
+	stepsRun: z.array(z.string()).describe("Pipeline steps executed: crawl, classify, security, spa, synthesize, generate, kcp, qc"),
+	results: z.object({
+		category: z.string().describe("Primary classification"),
+		securityGrade: z.string().describe("A-F"),
+		interactionModel: z.string(),
+		qcVerdict: z.string().optional().describe("clean/suspicious/contaminated"),
+		pagesCrawled: z.number(),
+	}),
+	learnings: z.array(z.string()).describe("What was learned that isn't captured in site artifacts — meta observations, pipeline improvements needed, unexpected findings"),
+	problems: z.array(z.string()).optional().describe("Shortcomings, failures, things that didn't work"),
+	followUp: z.array(z.string()).optional().describe("Ideas for next triage or pipeline improvements"),
+});
+export type TriageLogEntry = z.infer<typeof TriageLogEntrySchema>;
+
+export const TriageLogSchema = z.object({
+	version: z.literal("1.0"),
+	entries: z.array(TriageLogEntrySchema),
+});
+export type TriageLog = z.infer<typeof TriageLogSchema>;

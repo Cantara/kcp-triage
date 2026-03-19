@@ -19,4 +19,8 @@ export {
 	type SecurityAudit,
 	TriageReportSchema,
 	type TriageReport,
+	TriageLogEntrySchema,
+	type TriageLogEntry,
+	TriageLogSchema,
+	type TriageLog,
 } from "./triage.js";
