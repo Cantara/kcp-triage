@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Cantara/knowledge-context-protocol/schemas/authority-block.json",
+  "title": "KCP Authority Block (RFC-0009)",
+  "description": "Governance permissions for KCP units — what actions agents may take",
+  "type": "object",
+  "properties": {
+    "read": {
+      "$ref": "#/$defs/permission",
+      "description": "Can the agent read this unit?"
+    },
+    "summarize": {
+      "$ref": "#/$defs/permission",
+      "description": "Can the agent summarize this unit?"
+    },
+    "modify": {
+      "$ref": "#/$defs/permission",
+      "description": "Can the agent modify this unit?"
+    },
+    "execute": {
+      "$ref": "#/$defs/permission",
+      "description": "Can the agent execute or act on this unit?"
+    },
+    "share_externally": {
+      "$ref": "#/$defs/permission",
+      "description": "Can the agent share this unit outside the current context?"
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "permission": {
+      "type": "string",
+      "enum": ["initiative", "requires_approval", "denied"]
+    }
+  }
+}

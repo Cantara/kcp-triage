@@ -201,6 +201,23 @@ export const TriageLogEntrySchema = z.object({
 });
 export type TriageLogEntry = z.infer<typeof TriageLogEntrySchema>;
 
+// ─── KCP Authority / Governance (RFC-0009) ──────────────────
+export const AuthorityPermissionSchema = z.enum([
+	"initiative",
+	"requires_approval",
+	"denied",
+]);
+export type AuthorityPermission = z.infer<typeof AuthorityPermissionSchema>;
+
+export const AuthorityBlockSchema = z.object({
+	read: AuthorityPermissionSchema.optional().describe("Can the agent read this unit?"),
+	summarize: AuthorityPermissionSchema.optional().describe("Can the agent summarize this unit?"),
+	modify: AuthorityPermissionSchema.optional().describe("Can the agent modify this unit?"),
+	execute: AuthorityPermissionSchema.optional().describe("Can the agent execute/act on this unit?"),
+	share_externally: AuthorityPermissionSchema.optional().describe("Can the agent share this unit outside the current context?"),
+});
+export type AuthorityBlock = z.infer<typeof AuthorityBlockSchema>;
+
 export const TriageLogSchema = z.object({
 	version: z.literal("1.0"),
 	entries: z.array(TriageLogEntrySchema),

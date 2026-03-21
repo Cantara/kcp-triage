@@ -1,4 +1,4 @@
-import type { SiteIdentity, ContentClassification, SiteSynthesis, SiteProject } from "../schemas/index.js";
+import type { SiteIdentity, ContentClassification, SiteSynthesis, SiteProject, AuthorityBlock } from "../schemas/index.js";
 import YAML from "yaml";
 
 /**
@@ -6,6 +6,7 @@ import YAML from "yaml";
  * This is deterministic — no LLM call. It indexes the generated project files
  * so any AI agent framework can discover and selectively load site knowledge.
  *
+ * v0.12: Emits authority blocks per RFC-0009 (Governance Extensions) — Level 2
  * Spec: https://github.com/Cantara/knowledge-context-protocol
  */
 export function generateKcpManifest(
@@ -95,6 +96,11 @@ export function generateKcpManifest(
 			validated: now,
 			depends_on: ["site-overview"],
 			triggers: [skill.name, ...triggerWords],
+			authority: {
+				read: "initiative",
+				summarize: "initiative",
+				execute: "requires_approval",
+			},
 			hints: {
 				load_strategy: "lazy",
 				priority: "supplementary",
@@ -102,7 +108,7 @@ export function generateKcpManifest(
 		});
 	}
 
-	// APIs
+	// APIs — authority maps per RFC-0009: verified→requires_approval, rumor→denied
 	for (const api of project.apis) {
 		units.push({
 			id: `api-${api.name}`,
@@ -115,6 +121,7 @@ export function generateKcpManifest(
 			validated: now,
 			depends_on: ["site-overview"],
 			access: api.confidence === "verified" ? "public" : "restricted",
+			authority: mapApiConfidenceToAuthority(api.confidence),
 			hints: {
 				load_strategy: "lazy",
 				priority: api.confidence === "verified" ? "critical" : "supplementary",
@@ -142,12 +149,19 @@ export function generateKcpManifest(
 	}
 
 	const manifest = {
-		kcp_version: "0.10",
+		kcp_version: "0.12",
 		project: site.domain,
 		version: "1.0.0",
 		updated: now,
 		language: site.language ?? "nb",
 		indexing: "read-only",
+		authority: {
+			read: "initiative" as const,
+			summarize: "initiative" as const,
+			modify: "requires_approval" as const,
+			execute: "denied" as const,
+			share_externally: "denied" as const,
+		},
 		rate_limits: {
 			note: "Respect robots.txt crawl-delay; minimum 500ms between requests",
 		},
@@ -155,6 +169,35 @@ export function generateKcpManifest(
 	};
 
 	return YAML.stringify(manifest, { lineWidth: 120 });
+}
+
+/**
+ * Map API confidence to RFC-0009 authority block.
+ * Verified APIs can be executed with approval; unverified ones are denied.
+ */
+function mapApiConfidenceToAuthority(confidence: "verified" | "inferred" | "rumor"): AuthorityBlock {
+	switch (confidence) {
+		case "verified":
+			return {
+				read: "initiative",
+				summarize: "initiative",
+				execute: "requires_approval",
+			};
+		case "inferred":
+			return {
+				read: "initiative",
+				summarize: "initiative",
+				execute: "requires_approval",
+				share_externally: "denied",
+			};
+		case "rumor":
+			return {
+				read: "initiative",
+				summarize: "requires_approval",
+				execute: "denied",
+				share_externally: "denied",
+			};
+	}
 }
 
 interface KcpUnit {
@@ -172,6 +215,7 @@ interface KcpUnit {
 	triggers?: string[];
 	access?: string;
 	sensitivity?: string;
+	authority?: AuthorityBlock;
 	hints?: {
 		token_estimate?: number;
 		load_strategy?: "eager" | "lazy" | "never";
