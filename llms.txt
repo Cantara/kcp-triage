@@ -1,0 +1,38 @@
+# kcp-triage
+
+> Automatic agentic web service discovery — crawls and classifies websites,
+> then builds KCP knowledge.yaml manifests so LLM agents can interact with them.
+
+Each triaged site gets an agent-ready workbench: CLAUDE.md, skills, API inventory,
+unknown-endpoints list, and a KCP manifest. Two-layer architecture: Builder (src/)
+produces Sites (sites/<domain>/).
+
+Part of the [KCP ecosystem](https://github.com/Cantara/knowledge-context-protocol).
+Apache-2.0. TypeScript / Bun.
+
+## Structured Navigation (for AI agents)
+
+This repository ships a KCP v0.14 manifest:
+https://raw.githubusercontent.com/Cantara/kcp-triage/main/knowledge.yaml
+
+Signing key (delegated to Cantara org): https://wiki.cantara.no/.well-known/kcp-signing-key.pub
+
+## Key Files
+
+- [README.md](README.md) — Architecture, install, how to triage a site
+- [CLAUDE.md](CLAUDE.md) — Agent context, skills, codebase conventions
+- [src/](src/) — Builder pipeline: crawlers, classifiers, generators, orchestration
+
+## Install
+
+```bash
+bun install
+bun run src/cli.ts triage example.com
+```
+
+## Related
+
+- [knowledge-context-protocol](https://github.com/Cantara/knowledge-context-protocol) — KCP spec
+- [kcp-commands](https://github.com/Cantara/kcp-commands) — Claude Code hook
+- [kcp-memory](https://github.com/Cantara/kcp-memory) — Episodic memory hub
+- [kcp-dashboard](https://github.com/Cantara/kcp-dashboard) — Terminal observability UI

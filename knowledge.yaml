@@ -1,0 +1,71 @@
+version: "0.14"
+
+entity:
+  name: kcp-triage
+  type: automated-site-discovery-tool
+  description: >
+    Automatic agentic web service discovery — crawls, classifies, audits, and
+    reports on websites, then builds KCP knowledge.yaml manifests for them so
+    LLM agents can interact with the target service. Each triaged site gets an
+    agent-ready workbench: CLAUDE.md, skills, API inventory, and a KCP manifest.
+    Two-layer architecture: Builder (src/) produces Sites (sites/<domain>/).
+
+authority:
+  owner: Cantara — Norwegian Software Development Foundation
+  repo: https://github.com/Cantara/kcp-triage
+  license: Apache-2.0
+
+discovery:
+  provenance: canonical
+  confidence: high
+  staleness_days: 14
+
+signing:
+  scheme: ed25519
+  scope: this-manifest
+  public_key: https://wiki.cantara.no/.well-known/kcp-signing-key.pub
+  signature: https://raw.githubusercontent.com/Cantara/kcp-triage/main/knowledge.yaml.sig
+
+kcp_version: "0.14"
+project: kcp-triage
+version: "0.1.0"
+language: en
+license: "Apache-2.0"
+runtime: TypeScript / Bun
+indexing: open
+
+units:
+
+  - id: readme
+    path: README.md
+    intent: "What is kcp-triage, how does the two-layer architecture work, and how do I triage a site?"
+    scope: global
+    audience: [human, agent, developer]
+    validated: "2026-05-07"
+    triggers: [kcp-triage, triage, site discovery, web service, crawl, classify, audit, llm-orchestrated, builder, sites, workbench, agent-ready]
+
+  - id: claude-context
+    path: CLAUDE.md
+    intent: "What context, skills, and conventions does an LLM agent need to work effectively in the kcp-triage codebase?"
+    scope: global
+    audience: [agent]
+    validated: "2026-05-07"
+    depends_on: [readme]
+    triggers: [claude.md, agent context, conventions, skills, how to work, codebase orientation]
+
+  - id: builder-src
+    path: src/
+    intent: "Where is the CLI pipeline source? How do the crawlers, classifiers, generators, and orchestration work?"
+    scope: module
+    audience: [developer, agent]
+    validated: "2026-05-07"
+    depends_on: [readme]
+    triggers: [src, pipeline, crawlers, classifiers, generators, orchestration, cli, builder, model tiers, opus, sonnet, haiku]
+
+relationships:
+  - from: readme
+    to: claude-context
+    type: context
+  - from: readme
+    to: builder-src
+    type: enables
