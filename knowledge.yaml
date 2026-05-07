@@ -62,6 +62,12 @@ units:
     depends_on: [readme]
     triggers: [src, pipeline, crawlers, classifiers, generators, orchestration, cli, builder, model tiers, opus, sonnet, haiku]
 
+manifests:
+  - url: https://cantara.github.io/knowledge-context-protocol/knowledge.yaml
+    relationship: foundation
+  - url: https://wiki.cantara.no/knowledge/projects/kcp.yaml
+    relationship: org-context
+
 relationships:
   - from: readme
     to: claude-context
