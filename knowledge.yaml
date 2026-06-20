@@ -28,7 +28,7 @@ signing:
 
 kcp_version: "0.21"
 project: kcp-triage
-version: "0.1.0"
+app_version: "0.1.0"
 language: en
 license: "Apache-2.0"
 runtime: TypeScript / Bun
