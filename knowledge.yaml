@@ -44,9 +44,9 @@ units:
     audience: [human, agent, developer]
     validated: "2026-05-07"
     triggers: [kcp-triage, triage, site discovery, web service, crawl, classify, audit, llm-orchestrated, builder, sites, workbench, agent-ready]
-      content_hash:
-        algorithm: sha256
-        value: ""
+    content_hash:
+      algorithm: sha256
+      value: ""
 
   - id: claude-context
     path: CLAUDE.md
@@ -56,9 +56,9 @@ units:
     validated: "2026-05-07"
     depends_on: [readme]
     triggers: [claude.md, agent context, conventions, skills, how to work, codebase orientation]
-      content_hash:
-        algorithm: sha256
-        value: ""
+    content_hash:
+      algorithm: sha256
+      value: ""
 
   - id: builder-src
     path: src/
@@ -68,9 +68,9 @@ units:
     validated: "2026-05-07"
     depends_on: [readme]
     triggers: [src, pipeline, crawlers, classifiers, generators, orchestration, cli, builder, model tiers, opus, sonnet, haiku]
-      content_hash:
-        algorithm: sha256
-        value: ""
+    content_hash:
+      algorithm: sha256
+      value: ""
 
 manifests:
   - url: https://cantara.github.io/knowledge-context-protocol/knowledge.yaml
