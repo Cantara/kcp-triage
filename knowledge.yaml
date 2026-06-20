@@ -1,4 +1,4 @@
-version: "0.14"
+version: "0.21"
 
 entity:
   name: kcp-triage
@@ -23,16 +23,17 @@ discovery:
 signing:
   scheme: ed25519
   scope: this-manifest
-  public_key: https://wiki.cantara.no/.well-known/kcp-signing-key.pub
-  signature: https://raw.githubusercontent.com/Cantara/kcp-triage/main/knowledge.yaml.sig
+  public_key: "MCowBQYDK2VwAyEAuipgusnqU9vjf3p2yPVLD/DmERT6tBbLOqEETdxAhMU="
+  signature: "https://raw.githubusercontent.com/Cantara/kcp-triage/main/knowledge.yaml.sig"
 
-kcp_version: "0.14"
+kcp_version: "0.21"
 project: kcp-triage
 version: "0.1.0"
 language: en
 license: "Apache-2.0"
 runtime: TypeScript / Bun
 indexing: open
+not_for: []
 
 units:
 
@@ -43,6 +44,9 @@ units:
     audience: [human, agent, developer]
     validated: "2026-05-07"
     triggers: [kcp-triage, triage, site discovery, web service, crawl, classify, audit, llm-orchestrated, builder, sites, workbench, agent-ready]
+      content_hash:
+        algorithm: sha256
+        value: ""
 
   - id: claude-context
     path: CLAUDE.md
@@ -52,6 +56,9 @@ units:
     validated: "2026-05-07"
     depends_on: [readme]
     triggers: [claude.md, agent context, conventions, skills, how to work, codebase orientation]
+      content_hash:
+        algorithm: sha256
+        value: ""
 
   - id: builder-src
     path: src/
@@ -61,6 +68,9 @@ units:
     validated: "2026-05-07"
     depends_on: [readme]
     triggers: [src, pipeline, crawlers, classifiers, generators, orchestration, cli, builder, model tiers, opus, sonnet, haiku]
+      content_hash:
+        algorithm: sha256
+        value: ""
 
 manifests:
   - url: https://cantara.github.io/knowledge-context-protocol/knowledge.yaml
