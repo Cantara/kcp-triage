@@ -6,7 +6,8 @@ import YAML from "yaml";
  * This is deterministic — no LLM call. It indexes the generated project files
  * so any AI agent framework can discover and selectively load site knowledge.
  *
- * v0.12: Emits authority blocks per RFC-0009 (Governance Extensions) — Level 2
+ * Targets KCP spec v0.25. Emits authority blocks per RFC-0009 (Governance Extensions) — Level 2,
+ * and structured rate_limits per §4.15 (Economic Metadata, v0.25).
  * Spec: https://github.com/Cantara/knowledge-context-protocol
  */
 export function generateKcpManifest(
@@ -149,7 +150,7 @@ export function generateKcpManifest(
 	}
 
 	const manifest = {
-		kcp_version: "0.12",
+		kcp_version: "0.25",
 		project: site.domain,
 		version: "1.0.0",
 		updated: now,
@@ -162,7 +163,12 @@ export function generateKcpManifest(
 			execute: "denied" as const,
 			share_externally: "denied" as const,
 		},
+		// Structured per §4.15 (v0.25): 500ms minimum spacing → 120 requests/minute ceiling.
 		rate_limits: {
+			default: {
+				requests_per_minute: 120,
+			},
+			backoff: "exponential",
 			note: "Respect robots.txt crawl-delay; minimum 500ms between requests",
 		},
 		units,

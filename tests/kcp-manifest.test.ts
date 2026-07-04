@@ -71,10 +71,17 @@ describe("generateKcpManifest skill triggers", () => {
 });
 
 describe("RFC-0009 authority blocks", () => {
-	test("manifest has kcp_version 0.12", () => {
+	test("manifest has kcp_version 0.25", () => {
 		const yaml = generateKcpManifest(site, classification, synthesis, makeProject());
 		const manifest = parseManifest(yaml);
-		expect(manifest.kcp_version).toBe("0.12");
+		expect(manifest.kcp_version).toBe("0.25");
+	});
+
+	test("rate_limits are structured per v0.25 §4.15", () => {
+		const yaml = generateKcpManifest(site, classification, synthesis, makeProject());
+		const manifest = parseManifest(yaml);
+		expect(manifest.rate_limits.default.requests_per_minute).toBe(120);
+		expect(manifest.rate_limits.backoff).toBe("exponential");
 	});
 
 	test("root-level authority defaults are conservative", () => {
