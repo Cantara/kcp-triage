@@ -110,7 +110,7 @@ units:
       ]
     content_hash:
       algorithm: sha256
-      value: "606af0030473a82c0484f0fe2052610f2f0cfb1e0a15f4dc0f39b888585712ec"
+      value: "efc365bdce2b2d0406f5a41a2830727dd63c8feb58630dcb57ea4198b6fb537f"
 
 manifests:
   - url: https://cantara.github.io/knowledge-context-protocol/knowledge.yaml
