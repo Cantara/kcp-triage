@@ -27,7 +27,7 @@ signing:
   signature: "https://raw.githubusercontent.com/Cantara/kcp-triage/main/knowledge\
     .yaml.sig"
 
-kcp_version: "0.21"
+kcp_version: "0.26"
 project: kcp-triage
 app_version: "0.1.0"
 language: en
@@ -125,3 +125,11 @@ relationships:
   - from: readme
     to: builder-src
     type: enables
+
+# Serving Endpoint Binding (KCP SPEC v0.26 §3.12): authoritative manifest URL
+# and authorized MCP representative. Ignored by pre-0.26 verifiers.
+serving:
+  manifest:
+    - https://raw.githubusercontent.com/Cantara/kcp-triage/main/knowledge.yaml
+  mcp:
+    - https://mcp.cantara.no/mcp
