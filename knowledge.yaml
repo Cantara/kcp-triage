@@ -44,7 +44,7 @@ units:
       do I triage a site?"
     scope: global
     audience: [ human, agent, developer ]
-    validated: "2026-05-07"
+    validated: "2026-07-17"
     triggers:
       [
         kcp-triage,
@@ -70,7 +70,7 @@ units:
       effectively in the kcp-triage codebase?"
     scope: global
     audience: [ agent ]
-    validated: "2026-05-07"
+    validated: "2026-07-17"
     depends_on: [ readme ]
     triggers:
       [
@@ -91,7 +91,7 @@ units:
       generators, and orchestration work?"
     scope: module
     audience: [ developer, agent ]
-    validated: "2026-05-07"
+    validated: "2026-07-17"
     depends_on: [ readme ]
     triggers:
       [
@@ -110,7 +110,7 @@ units:
       ]
     content_hash:
       algorithm: sha256
-      value: "efc365bdce2b2d0406f5a41a2830727dd63c8feb58630dcb57ea4198b6fb537f"
+      value: "b937d95f6634f8befb74ea6a7137f247761659497f486325329b105b834cafcc"
 
 manifests:
   - url: https://cantara.github.io/knowledge-context-protocol/knowledge.yaml
