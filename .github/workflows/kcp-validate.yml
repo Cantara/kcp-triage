@@ -1,0 +1,41 @@
+name: Validate KCP Manifest
+
+# The manifest is a shipped artifact and nothing in this repo checked it — it is the
+# only repo in the kcp-* set with no CI workflow at all, just signing.
+#
+# Signing does not substitute for validation. `kcp render` verifies the signature, not
+# the declared content_hash values, so a manifest whose digests have gone stale against
+# the files they describe still renders `tier: known`. That is how `builder-src` came
+# to declare a digest for `src/` that no longer matched it, and how both `manifests[]`
+# entries stayed without the `id` §3.6 requires — invalid at the version they declared,
+# with nothing positioned to say so.
+#
+# Deliberately `validate`, not `sign --update-hashes`. A content_hash exists so a
+# consumer can detect that content drifted from what was signed; a pipeline that
+# silently recomputes it on every push launders the drift into a green build and can
+# never detect anything. Failing here means someone updates the digest having looked at
+# what changed.
+
+on:
+  push:
+    branches: [main]
+    paths: [knowledge.yaml, "src/**", "README.md"]
+  pull_request:
+    paths: [knowledge.yaml, "src/**", "README.md"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      # Pinned rather than `latest`: a CLI release that adds a conformance rule should
+      # be adopted deliberately, not arrive as a surprise red build on an unrelated PR.
+      - name: Validate knowledge.yaml
+        run: npx --yes @cantara.no/kcp@0.29 validate knowledge.yaml
