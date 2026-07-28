@@ -109,12 +109,15 @@ units:
       ]
     content_hash:
       algorithm: sha256
-      value: "b937d95f6634f8befb74ea6a7137f247761659497f486325329b105b834cafcc"
+      value: "8105bfa38baada542d5166fa3400f2104ed5cb255bb3c5c30588961a3b6d6264"
 
 manifests:
-  - url: https://cantara.github.io/knowledge-context-protocol/knowledge.yaml
+  # §3.6: `id` is REQUIRED and is how federation.manifest references resolve.
+  - id: kcp-spec
+    url: https://cantara.github.io/knowledge-context-protocol/knowledge.yaml
     relationship: foundation
-  - url: https://wiki.cantara.no/knowledge/projects/kcp.yaml
+  - id: cantara-org
+    url: https://wiki.cantara.no/knowledge/projects/kcp.yaml
     relationship: org-context
 
 relationships:
