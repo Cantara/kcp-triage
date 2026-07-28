@@ -1,6 +1,6 @@
 ---
 name: generate-kcp
-description: "KCP (Knowledge Context Protocol) manifest generation — now integrated into the pipeline as Step 6. Produces knowledge.yaml per the KCP v0.10 spec so any AI agent can discover and selectively load site knowledge."
+description: "KCP (Knowledge Context Protocol) manifest generation — now integrated into the pipeline as Step 6. Produces knowledge.yaml per the KCP v0.29 spec so any AI agent can discover and selectively load site knowledge."
 ---
 
 # KCP Artifact Generation
@@ -30,7 +30,7 @@ The pipeline produces both **content** and **manifest**:
 ## KCP Manifest Structure
 
 ```yaml
-kcp_version: "0.10"
+kcp_version: "0.29"
 project: www.example.com
 version: 1.0.0
 updated: 2026-03-18

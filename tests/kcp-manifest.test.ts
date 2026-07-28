@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import YAML from "yaml";
-import { generateKcpManifest } from "../src/generators/kcp-manifest.js";
+import { generateKcpManifest, KCP_VERSION } from "../src/generators/kcp-manifest.js";
 import type { SiteIdentity, ContentClassification, SiteSynthesis, SiteProject } from "../src/schemas/index.js";
 
 const site: SiteIdentity = {
@@ -71,10 +71,33 @@ describe("generateKcpManifest skill triggers", () => {
 });
 
 describe("RFC-0009 authority blocks", () => {
-	test("manifest has kcp_version 0.25", () => {
+	// The generated manifest must carry the version the generator declares, and the
+	// generator must declare the version we intend to emit. Those are two different
+	// claims and this repo previously conflated them: the value was a literal in the
+	// generator AND a literal in this test, so the test pinned 0.25 rather than
+	// checking it. Anyone bumping the generator got a red test and could reasonably
+	// conclude 0.25 was deliberate.
+	test("generated manifest carries the declared KCP_VERSION", () => {
 		const yaml = generateKcpManifest(site, classification, synthesis, makeProject());
 		const manifest = parseManifest(yaml);
-		expect(manifest.kcp_version).toBe("0.25");
+		expect(manifest.kcp_version).toBe(KCP_VERSION);
+	});
+
+	// The one line a spec bump should have to touch. Deliberately a literal: if this
+	// is the only place a version number is written twice, the diff of a bump is
+	// self-documenting rather than invisible.
+	test("KCP_VERSION is the spec version this generator targets", () => {
+		expect(KCP_VERSION).toBe("0.29");
+	});
+
+	// A generator emits manifests into repos that have nothing else to do with KCP, so
+	// a stale pin is not one file but every file it will ever write. Backward
+	// compatibility means those parse; it does not mean they carry the governance a
+	// current consumer expects.
+	test("the targeted version is not silently behind a known spec release", () => {
+		const [major, minor] = KCP_VERSION.split(".").map(Number);
+		expect(major).toBe(0);
+		expect(minor).toBeGreaterThanOrEqual(29);
 	});
 
 	test("rate_limits are structured per v0.25 §4.15", () => {

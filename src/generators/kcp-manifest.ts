@@ -6,10 +6,25 @@ import YAML from "yaml";
  * This is deterministic — no LLM call. It indexes the generated project files
  * so any AI agent framework can discover and selectively load site knowledge.
  *
- * Targets KCP spec v0.25. Emits authority blocks per RFC-0009 (Governance Extensions) — Level 2,
- * and structured rate_limits per §4.15 (Economic Metadata, v0.25).
+ * Emits authority blocks per RFC-0009 (Governance Extensions) — Level 2, and structured
+ * rate_limits per §4.15 (Economic Metadata, v0.25).
  * Spec: https://github.com/Cantara/knowledge-context-protocol
  */
+
+/**
+ * The KCP spec version emitted manifests declare.
+ *
+ * A single exported constant rather than a literal at the call site, because a generator
+ * writes manifests into repositories that have nothing else to do with KCP — a stale pin
+ * here is not one file but every file this tool will ever produce, and consumers reading
+ * them apply the semantics of whatever version is declared.
+ *
+ * It sat at 0.25 through four spec releases (action_scope §4.3a, authority_level §3.13,
+ * escalation §3.14, kind: playbook §4.3b) because the value was duplicated as a literal
+ * in the test, so the suite pinned it instead of checking it. Bumping this constant is
+ * the whole change; tests/kcp-manifest.test.ts asserts the generated manifest matches.
+ */
+export const KCP_VERSION = "0.29";
 export function generateKcpManifest(
 	site: SiteIdentity,
 	classification: ContentClassification,
@@ -150,7 +165,7 @@ export function generateKcpManifest(
 	}
 
 	const manifest = {
-		kcp_version: "0.25",
+		kcp_version: KCP_VERSION,
 		project: site.domain,
 		version: "1.0.0",
 		updated: now,
