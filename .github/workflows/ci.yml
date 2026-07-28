@@ -1,0 +1,41 @@
+# Until now this repository had `typecheck`, `test`, `build` and `lint` scripts and no
+# workflow that ran any of them. The only checks on a pull request were Socket Security's
+# two, which scan dependencies for supply-chain problems and never compile the code — so
+# a dependency bump that broke the build reported green. A zod v4 bump was mergeable on
+# that basis while producing four type errors, with every unit test still passing.
+#
+# `lint` is deliberately not a gate yet: biome reports 31 pre-existing findings on main,
+# so making it blocking would fail every PR on debt it did not introduce. It runs
+# non-blocking here to keep the number visible.
+
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - run: bun install --frozen-lockfile
+
+      # Ordered cheapest-first so an obvious break fails fast.
+      - name: Typecheck
+        run: bun run typecheck
+
+      - name: Test
+        run: bun test
+
+      - name: Build
+        run: bun run build
+
+      - name: Lint (non-blocking — 31 pre-existing findings)
+        run: bun run lint || true
