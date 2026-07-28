@@ -27,7 +27,7 @@ signing:
   signature: "https://raw.githubusercontent.com/Cantara/kcp-triage/main/knowledge\
     .yaml.sig"
 
-kcp_version: "0.26"
+kcp_version: "0.29"
 project: kcp-triage
 app_version: "0.1.0"
 language: en
