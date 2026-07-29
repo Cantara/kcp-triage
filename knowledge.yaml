@@ -109,7 +109,7 @@ units:
       ]
     content_hash:
       algorithm: sha256
-      value: "8105bfa38baada542d5166fa3400f2104ed5cb255bb3c5c30588961a3b6d6264"
+      value: "7f7812a79b2c6df571e6f76dc97725da1717165d71527905e848fe4971c9863f"
 
 manifests:
   # §3.6: `id` is REQUIRED and is how federation.manifest references resolve.
