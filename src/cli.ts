@@ -4,7 +4,7 @@ import chalk from "chalk";
 
 const program = new Command()
 	.name("site-triage")
-	.version("0.1.0")
+	.version("0.2.0")
 	.description("Meta-scaffolding CLI for LLM-orchestrated website triage");
 
 // ─── init: generate a triage config for a target site ────────────
