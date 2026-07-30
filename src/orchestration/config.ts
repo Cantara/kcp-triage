@@ -14,7 +14,7 @@ export type TaskRouting = z.infer<typeof TaskRoutingSchema>;
 
 export const OrchestratorConfigSchema = z.object({
 	/** Which model handles which task — override defaults to push work to cheaper tiers */
-	routing: TaskRoutingSchema.default({}),
+	routing: TaskRoutingSchema.default(() => TaskRoutingSchema.parse({})),
 	/** Max pages to crawl per site */
 	maxCrawlPages: z.number().int().positive().default(20),
 	/** Timeout per HTTP request in ms */

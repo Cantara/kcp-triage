@@ -25,7 +25,7 @@ export const CrawlPageSchema = z.object({
 			rel: z.string().optional(),
 		}),
 	),
-	metaTags: z.record(z.string()),
+	metaTags: z.record(z.string(), z.string()),
 	bodyTextPreview: z.string().describe("First ~2000 chars of visible text"),
 	crawledAt: z.string().datetime(),
 });
