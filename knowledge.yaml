@@ -111,6 +111,160 @@ units:
       algorithm: sha256
       value: "7f7812a79b2c6df571e6f76dc97725da1717165d71527905e848fe4971c9863f"
 
+  # The procedural plane (KCP §4.3a, RFC-0028): kcp-triage's nine agent skills declared
+  # as governed procedures rather than files that happen to describe procedures.
+  #
+  # Tool names are Claude Code's, because that is the runtime which adjudicates them here.
+  # A vocabulary only means something to whoever enforces it — kcp-agent's "shell.exec"
+  # would match nothing in this repo.
+  #
+  # `paths` appears only where the skill states its own targets. An invented allowlist
+  # that is too narrow blocks real work while looking rigorous, which is worse than
+  # declaring nothing.
+
+  - id: orchestrator-skill
+    path: skills/orchestrator/SKILL.md
+    kind: skill
+    intent: "Top-level entry point for triaging a website — coordinates the seven-step pipeline and routes work across model tiers"
+    scope: project
+    audience: [agent]
+    triggers: [triage, orchestrate, pipeline, entry point, route]
+    load_eligible: true
+    action_scope:
+      tools: [Bash, Read, Task]
+      capabilities: ["triage.orchestrate"]
+    content_hash:
+      algorithm: sha256
+      value: "fb21d22a8c372e6a4c77f698a50328fe3137f9ce581143b1562d2396118e79f9"
+
+  - id: scan-site-skill
+    path: skills/scan-site/SKILL.md
+    kind: skill
+    intent: "Full site triage: init, crawl, classify, security audit, synthesize, generate project, KCP manifest, report"
+    scope: project
+    audience: [agent]
+    triggers: [scan, crawl, classify, audit, site, synthesize]
+    load_eligible: true
+    action_scope:
+      # Reaches the public internet by design; writes only under its own site output.
+      tools: [Bash, Read, Write, WebFetch]
+      paths: ["sites/**", "src/analyzers/**"]
+      capabilities: ["triage.scan", "network.fetch"]
+    content_hash:
+      algorithm: sha256
+      value: "f9d374b5556d6a0fc38654e155bb82804ee47875e6e0a438e14068252788a7ec"
+
+  - id: security-triage-skill
+    path: skills/security-triage/SKILL.md
+    kind: skill
+    intent: "Builder-level security assessment for web services — header audits, exposed-secret identification, A–F grading"
+    scope: project
+    audience: [agent]
+    triggers: [security, headers, secrets, audit, grade, vulnerability]
+    load_eligible: true
+    action_scope:
+      tools: [Bash, Read, WebFetch]
+      capabilities: ["triage.security-audit", "network.fetch"]
+    content_hash:
+      algorithm: sha256
+      value: "1a184c9097a7822f6458d05c531b78e00d001290cf38bed45f5f56596a9cbc32"
+
+  - id: generate-kcp-skill
+    path: skills/generate-kcp/SKILL.md
+    kind: skill
+    intent: "Generate a KCP knowledge.yaml for a triaged site as pipeline step 6, conformant to the current spec"
+    scope: project
+    audience: [agent]
+    triggers: [KCP, manifest, generate, knowledge.yaml, step 6]
+    load_eligible: true
+    action_scope:
+      tools: [Bash, Read, Write]
+      paths: ["sites/**", "src/generators/**"]
+      capabilities: ["triage.generate-kcp"]
+    content_hash:
+      algorithm: sha256
+      value: "c839033355ae290f5ee78c8e33cfce349d0056c6a6fd4d7bcfcd40d9b882868a"
+
+  - id: add-analyzer-skill
+    path: skills/add-analyzer/SKILL.md
+    kind: skill
+    intent: "Extend the triage pipeline with a new analysis step — SEO, performance, accessibility, DNS"
+    scope: project
+    audience: [agent]
+    triggers: [analyzer, extend, pipeline, add step, SEO, performance]
+    load_eligible: true
+    action_scope:
+      tools: [Bash, Read, Write, Edit, Grep]
+      paths: ["src/**", "tests/**"]
+      capabilities: ["triage.extend-pipeline"]
+    content_hash:
+      algorithm: sha256
+      value: "4788d6c31d2a57dd73be873e3ca8a3bfebcd88c5f4c9cc8fb58c3b49ce2b8589"
+
+  - id: sdd-workflow-skill
+    path: skills/sdd-workflow/SKILL.md
+    kind: skill
+    intent: "Spec-Driven Development workflow — issues, branches, specs, and the order they come in"
+    scope: project
+    audience: [agent]
+    triggers: [SDD, spec, issue, branch, workflow, feature]
+    load_eligible: true
+    action_scope:
+      tools: [Bash, Read, Write, Edit]
+      capabilities: ["triage.sdd", "vcs.branch", "issue.write"]
+    content_hash:
+      algorithm: sha256
+      value: "f94e84838349be9f5477e57d1e6eea2b9bf9aba7285ea562817de6d958f7a63d"
+
+  - id: claude-team-skill
+    path: skills/claude-team/SKILL.md
+    kind: skill
+    intent: "Multi-agent delegation — which model tier to use, how to split work, how to recombine it"
+    scope: project
+    audience: [agent]
+    triggers: [delegate, multi-agent, model tier, Opus, Sonnet, Haiku, subagent]
+    load_eligible: true
+    action_scope:
+      tools: [Task, Read]
+      capabilities: ["triage.delegate"]
+    content_hash:
+      algorithm: sha256
+      value: "3394e2cefe4be5c26970c21c12f77ef5fc02b72db6430f54c8a732e72b2d50ba"
+
+  - id: triage-log-skill
+    path: skills/triage-log/SKILL.md
+    kind: skill
+    intent: "Review and query the triage log — what has been triaged, the results, and the learnings across sessions"
+    scope: project
+    audience: [agent, developer]
+    triggers: [log, history, previous triage, learnings, query]
+    load_eligible: true
+    action_scope:
+      # Read-only by intent: it answers questions about past runs, it does not amend them.
+      tools: [Read, Grep]
+      paths: ["triage-log.yaml"]
+      capabilities: ["triage.read-log"]
+    content_hash:
+      algorithm: sha256
+      value: "c0e1fdffa9e8b2a3079602d99c1777030f88c2d23ba7a335a2f2f43d87b66cec"
+
+  - id: export-cantara-skill
+    path: skills/export-cantara/SKILL.md
+    kind: skill
+    intent: "Export kcp-triage to the public Cantara repo — sanitizes personal data, removes triaged sites, rewrites URLs"
+    scope: project
+    audience: [agent]
+    triggers: [export, publish, Cantara, sanitize, public repo]
+    load_eligible: true
+    action_scope:
+      # The widest scope here, and the only one that publishes outward. Sanitization is
+      # the whole point, so the capability grant is narrow even though the tools are broad.
+      tools: [Bash, Read, Write, Edit, Grep]
+      capabilities: ["triage.export-public", "vcs.push"]
+    content_hash:
+      algorithm: sha256
+      value: "cb1fc3e9c5b12a5b15a9eb2cb36f3e0bf75677cb01b42b495e4421ba77773b60"
+
 manifests:
   # §3.6: `id` is REQUIRED and is how federation.manifest references resolve.
   - id: kcp-spec
