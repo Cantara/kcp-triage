@@ -28,6 +28,6 @@
   "devDependencies": {
     "@biomejs/biome": "2.5.6",
     "@types/bun": "latest",
-    "typescript": "^5.7.0"
+    "typescript": "^7.0.0"
   }
 }
