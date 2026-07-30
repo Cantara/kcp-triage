@@ -23,7 +23,7 @@
     "pino": "^10.3.1",
     "undici": "^8.9.0",
     "yaml": "^2.8.2",
-    "zod": "^3.24.0"
+    "zod": "^4.0.0"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.6",
