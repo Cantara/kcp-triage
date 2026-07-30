@@ -38,4 +38,4 @@ jobs:
       # Pinned rather than `latest`: a CLI release that adds a conformance rule should
       # be adopted deliberately, not arrive as a surprise red build on an unrelated PR.
       - name: Validate knowledge.yaml
-        run: npx --yes @cantara.no/kcp@0.29 validate knowledge.yaml
+        run: npx --yes @cantara.no/kcp@0.30 validate knowledge.yaml
