@@ -1,7 +1,7 @@
 {
   "name": "site-triage-meta",
-  "version": "0.1.0",
-  "description": "Meta-scaffolding CLI for LLM-orchestrated website triage — builds the system that builds the system",
+  "version": "0.2.0",
+  "description": "Meta-scaffolding CLI for LLM-orchestrated website triage \u2014 builds the system that builds the system",
   "type": "module",
   "bin": {
     "site-triage": "./dist/cli.js"
@@ -23,7 +23,7 @@
     "pino": "^10.3.1",
     "undici": "^8.9.0",
     "yaml": "^2.8.2",
-    "zod": "^3.24.0"
+    "zod": "^4.0.0"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.6",
