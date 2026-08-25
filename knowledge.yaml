@@ -43,7 +43,7 @@ units:
       do I triage a site?"
     scope: global
     audience: [ human, agent, developer ]
-    validated: "2026-07-17"
+    validated: "2026-08-25"
     triggers:
       [
         kcp-triage,
@@ -61,7 +61,7 @@ units:
       ]
     content_hash:
       algorithm: sha256
-      value: "6202b11dfa98ed898356fd9b6608a2e307e179dc2cfeabe037853bc70a793fde"
+      value: "ce44a1dc8bb2082bb860ce4273af43ddcaed36d7cd2a068f5de2bfc3c08742f5"
 
   - id: claude-context
     path: CLAUDE.md
@@ -69,7 +69,7 @@ units:
       effectively in the kcp-triage codebase?"
     scope: global
     audience: [ agent ]
-    validated: "2026-07-17"
+    validated: "2026-08-25"
     depends_on: [ readme ]
     triggers:
       [
@@ -82,7 +82,7 @@ units:
       ]
     content_hash:
       algorithm: sha256
-      value: "278338dcc5f20cae259bd5f2f74fcf8f73dc6d7d42ca44c305a6b97256c78ca1"
+      value: "735fad0609bae3d57ff6a6d1894f52cf3e90fc9c93f697a0dbf430fa3c586874"
 
   - id: builder-src
     path: src/

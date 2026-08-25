@@ -42,7 +42,7 @@ just report example.com
 
 ## Development
 
-This project uses [Spec-Driven Development](CLAUDE.md#sdd-workflow). New features go through: Issue → Branch → Spec → Schema → Implement → Skill → Test → PR.
+This project uses [Spec-Driven Development](skills/sdd-workflow/SKILL.md). New features go through: Issue → Branch → Spec → Schema → Implement → Skill → Test → PR.
 
 ```bash
 just check       # TypeScript check

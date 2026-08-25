@@ -1,91 +1,45 @@
 # kcp-triage
 
-Automatic agentic web service discovery — builds KCP knowledge about web services so LLM agents can interact with them.
+Automatic agentic web service discovery. Two-layer system: the **Builder** (`src/`)
+crawls, classifies, security-audits, and synthesizes a target website once; the output
+is a **Site** (`sites/<domain>/`) — an agent-ready workbench with its own CLAUDE.md,
+skills, API inventory, and KCP `knowledge.yaml` manifest.
 
-## Architecture
+## Start here
 
-Two-layer system:
-- **Builder** (`src/`): CLI pipeline that crawls, classifies, audits, and reports on websites
-- **Sites** (`sites/<domain>/`): Per-site generated projects with CLAUDE.md, skills, KCP artifacts
+Read `knowledge.yaml` first — it's the canonical agent-navigable index of README,
+CLAUDE.md, `src/`, and this repo's nine governed builder skills. Query it the standard
+KCP way: `npx kcp-agent plan '<intent>' --manifest .`
 
-## SDD Workflow
+For the shared conventions on how a governed skill unit should be authored
+(`action_scope` as a firewall rule, `PROFILE.md`), see
+[kcp-skill](https://github.com/Cantara/kcp-skill) — this repo does not vendor
+kcp-skill's own skill library, only its authoring conventions.
 
-Every non-trivial change follows Spec-Driven Development on a feature branch with a tracking issue.
+**Local skills:** `skills/` — nine builder-level procedures covering orchestration,
+full-site scanning, security-triage methodology, KCP manifest generation, adding a
+new analyzer, the SDD branch/spec workflow, model-tier delegation, and the
+triage-log.
 
-### Branch + Issue Flow
+## Gotchas
 
-1. **Create issue** — `gh issue create --title "Add <feature>" --body "..."` describing the goal
-2. **Branch from main** — `git checkout -b feat/<short-name>` (or `fix/`, `refactor/`)
-3. **Write spec** — `docs/specs/<feature>.md` with motivation, schema sketch, acceptance criteria
-4. **Implement** — Spec → Schema → Code → Skill → Test (see steps below)
-5. **PR + review** — `gh pr create` linking the issue. PR body summarizes what changed and why.
-6. **Merge** — Squash-merge to main, issue auto-closes via `Closes #N`
-
-### SDD Steps (within a branch)
-
-Spec → Schema → Implement → Skill → Test
-
-1. Write the spec in `docs/specs/`
-2. Define Zod schema in `src/schemas/triage.ts` + JSON schema in `schemas/`
-3. Implement in `src/analyzers/` or `src/crawlers/`
-4. Wire into `src/commands/run.ts` pipeline
-5. Create/update skill in `skills/`
-6. Add tests in `tests/`
-
-### Commit Convention
-
-- Prefix: `feat:`, `fix:`, `refactor:`, `docs:`, `test:`, `chore:`
-- Reference issue: `feat: add SEO analyzer (#12)`
-
-## Claude Team Delegation
-
-**DEFAULT to cheapest model. User will say explicitly if they want Opus-only.**
-
-| Role | Model | Use for |
-|------|-------|---------|
-| Architect/orchestrator | Opus | Hard thinking, design decisions, multi-step coordination |
-| Implementation | Sonnet | Code writing, classification, synthesis, analysis |
-| Grunt work | Haiku | Crawling, parsing, extraction, quick tasks |
-
-## Key Commands
-
-```bash
-bun install                    # Install deps
-bun run dev init <url> -o <dir>  # Init a triage project
-bun run dev run --config <path>  # Run full pipeline
-bun run dev report --config <path> [-f json|markdown|summary]
-bun run typecheck              # TypeScript check
-bun test                       # Run tests
-```
-
-## Project Structure
-
-```
-src/
-  cli.ts                       # CLI entry point
-  commands/{init,run,report}.ts # CLI commands
-  orchestration/{config,dispatcher,index}.ts # Model routing + API dispatch
-  crawlers/site-crawler.ts     # BFS HTML crawler
-  analyzers/{content-classifier,security-headers}.ts
-  schemas/triage.ts            # Zod schemas (source of truth)
-schemas/                       # JSON Schema exports
-tests/                         # Test files
-docs/
-  specs/                       # Design specs
-  prompts/                     # LLM prompt templates
-  security/                    # Security reference docs
-  crawling/                    # Crawler reference docs
-  resilience/                  # Error handling docs
-skills/                        # Builder-level Claude skills
-sites/                         # Generated per-site projects
-```
-
-## Conventions
-
-- All schemas defined in `src/schemas/triage.ts` with Zod, exported via `src/schemas/index.ts`
-- Analyzers are either deterministic (no LLM) or LLM-powered via `Dispatcher`
-- Pipeline steps in `src/commands/run.ts` use ora spinners for progress
-- Generated site output goes to `sites/<domain>/`, never project root
-- Use KCP Memory (`mcp__kcp-memory__*`) to record and retrieve cross-session learnings
-- Crawler includes 500ms politeness delay and User-Agent header
-- API key validated before crawling (fail fast)
+- **Two independent KCP versions in play.** This repo's own manifest (`knowledge.yaml`,
+  top-level) is at `kcp_version: "0.30"`. Manifests it *generates* for triaged sites
+  are pinned separately via `KCP_VERSION` in `src/generators/kcp-manifest.ts`
+  (currently `0.29`). Bumping one does not bump the other.
+- **`content_hash` drift fails CI — but only if CI runs.** `kcp validate` (the
+  check in `kcp-validate.yml`) recomputes each unit's `content_hash` against the
+  file on disk and hard-fails the build on a mismatch — it checks the hash, not
+  just the signature. The catch: the workflow's path filter only watches
+  `knowledge.yaml`, `src/**`, and `README.md` — not `skills/**` or `CLAUDE.md`
+  itself. Edit a `skills/*/SKILL.md` body (or this file) alone and CI never
+  runs, so a stale hash sits undetected until some unrelated push trips the
+  workflow and fails on it. Run `kcp sign --update-hashes` (or hand-edit the
+  digest in `knowledge.yaml`) whenever you change a skill body or this file.
+- **`skills/export-cantara/SKILL.md` describes infrastructure not present in this
+  checkout** (a `StigLau/kcp-triage` private sibling, IronClaw files under
+  `security/`, `src/defense/`) — none exist here and git history shows no
+  non-`Cantara/kcp-triage` remote. Verify before following it.
+- **Generated site output is disposable-and-regenerated**: `sites/<domain>/skills/`
+  and `apis/` are wiped and rebuilt on every pipeline run — don't hand-edit them
+  expecting persistence.
