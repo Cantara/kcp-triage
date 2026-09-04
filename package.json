@@ -15,7 +15,7 @@
     "fmt": "bunx @biomejs/biome format --write src/"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.115.0",
+    "@anthropic-ai/sdk": "^0.124.0",
     "chalk": "^6.0.0",
     "cheerio": "^1.0.0",
     "commander": "^15.0.0",
