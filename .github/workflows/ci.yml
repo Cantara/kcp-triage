@@ -25,7 +25,17 @@ jobs:
         with:
           bun-version: latest
 
+      - name: Guard - bun.lock is the only lockfile
+        run: |
+          if [ -e package-lock.json ] || [ -e npm-shrinkwrap.json ] || [ -e yarn.lock ] || [ -e pnpm-lock.yaml ]; then
+            echo "::error::Only bun.lock is allowed; remove the other lockfile(s)."
+            exit 1
+          fi
+
       - run: bun install --frozen-lockfile
+
+      - name: Guard - bun.lock is in sync with package.json
+        run: git diff --exit-code -- bun.lock
 
       # Ordered cheapest-first so an obvious break fails fast.
       - name: Typecheck

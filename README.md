@@ -42,6 +42,8 @@ just report example.com
 
 ## Development
 
+**Contributing note: `bun.lock` is the only lockfile.** Use `bun install` (CI uses `--frozen-lockfile`); do not add `package-lock.json`. CI fails if it reappears.
+
 This project uses [Spec-Driven Development](skills/sdd-workflow/SKILL.md). New features go through: Issue → Branch → Spec → Schema → Implement → Skill → Test → PR.
 
 ```bash
