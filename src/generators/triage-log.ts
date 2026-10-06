@@ -1,7 +1,7 @@
-import { readFile, writeFile, access } from "node:fs/promises";
-import { join, dirname } from "node:path";
+import { access, readFile, writeFile } from "node:fs/promises";
+import { dirname, join } from "node:path";
 import YAML from "yaml";
-import type { TriageReport, TriageLog, TriageLogEntry } from "../schemas/index.js";
+import type { TriageLog, TriageLogEntry, TriageReport } from "../schemas/index.js";
 
 const PIPELINE_VERSION = "0.1.0";
 const LOG_FILENAME = "triage-log.yaml";
@@ -58,7 +58,7 @@ export async function appendTriageLog(
 
 	// Build a stable ID: domain + date (YYYY-MM-DD), with a suffix if there's
 	// already an entry for this domain on this date.
-	const dateStr = new Date().toISOString().split("T")[0]!;
+	const dateStr = new Date().toISOString().slice(0, 10);
 	const baseId = `${report.site.domain}-${dateStr}`;
 	const existingIds = new Set(log.entries.map((e) => e.id));
 	let id = baseId;

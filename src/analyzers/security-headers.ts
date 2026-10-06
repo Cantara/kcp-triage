@@ -102,8 +102,7 @@ export async function auditSecurityHeaders(
 		const httpRedirectsToHttps =
 			httpRes.status >= 300 &&
 			httpRes.status < 400 &&
-			redirectLocation !== undefined &&
-			redirectLocation.startsWith("https://");
+			redirectLocation?.startsWith("https://") === true;
 
 		const vulnerabilities: SecurityAudit["vulnerabilities"] = [];
 		if (!httpRedirectsToHttps) {
