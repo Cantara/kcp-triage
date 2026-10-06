@@ -58,7 +58,7 @@ export async function crawlSite(url: string, options: CrawlOptions): Promise<Cra
 
 	// After BFS loop, fetch robots.txt
 	let robotsTxt: string | undefined;
-	let sitemapUrls: string[] = [];
+	const sitemapUrls: string[] = [];
 	try {
 		const robotsUrl = new URL("/robots.txt", base).href;
 		const robotsRes = await fetch(robotsUrl, {
@@ -70,7 +70,7 @@ export async function crawlSite(url: string, options: CrawlOptions): Promise<Cra
 			// Extract sitemap URLs from robots.txt
 			for (const line of robotsTxt.split("\n")) {
 				const m = line.match(/^Sitemap:\s*(.+)/i);
-				if (m && m[1]) sitemapUrls.push(m[1].trim());
+				if (m?.[1]) sitemapUrls.push(m[1].trim());
 			}
 		}
 	} catch {
@@ -80,7 +80,7 @@ export async function crawlSite(url: string, options: CrawlOptions): Promise<Cra
 	// Populate description and language from first page's meta tags
 	const firstPage = pages[0];
 	const description =
-		firstPage?.metaTags["description"] ?? firstPage?.metaTags["og:description"];
+		firstPage?.metaTags.description ?? firstPage?.metaTags["og:description"];
 	const language = firstPage?.metaTags["og:locale"];
 
 	const site: SiteIdentity = {

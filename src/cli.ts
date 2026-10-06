@@ -1,6 +1,5 @@
 #!/usr/bin/env bun
 import { Command } from "commander";
-import chalk from "chalk";
 
 const program = new Command()
 	.name("site-triage")

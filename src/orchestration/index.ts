@@ -1,9 +1,9 @@
-export { Dispatcher, type TaskResult } from "./dispatcher.js";
 export {
+	DEFAULT_CONFIG,
+	MODEL_IDS,
 	type ModelTier,
-	type TaskRouting,
 	type OrchestratorConfig,
 	OrchestratorConfigSchema,
-	MODEL_IDS,
-	DEFAULT_CONFIG,
+	type TaskRouting,
 } from "./config.js";
+export { Dispatcher, type TaskResult } from "./dispatcher.js";

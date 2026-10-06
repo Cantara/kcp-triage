@@ -9,7 +9,8 @@ export async function showReport(
 	configPath: string,
 	format: Format,
 ): Promise<void> {
-	const raw = JSON.parse(await readFile(configPath, "utf-8"));
+	// Validate that the config exists and is valid JSON (the parsed value is not used).
+	JSON.parse(await readFile(configPath, "utf-8"));
 	const outputDir = dirname(configPath);
 	const reportPath = join(outputDir, "triage-report.json");
 

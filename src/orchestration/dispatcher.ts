@@ -12,7 +12,7 @@ export interface TaskResult<T> {
 export class Dispatcher {
 	private client: Anthropic;
 
-	constructor(private config: OrchestratorConfig) {
+	constructor(config: OrchestratorConfig) {
 		this.client = new Anthropic({
 			apiKey: config.apiKey ?? process.env.ANTHROPIC_API_KEY,
 		});

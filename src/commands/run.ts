@@ -1,16 +1,16 @@
-import { readFile, writeFile, mkdir, rm } from "node:fs/promises";
-import { join, dirname } from "node:path";
+import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { dirname, join } from "node:path";
 import chalk from "chalk";
 import ora from "ora";
-import { OrchestratorConfigSchema } from "../orchestration/config.js";
-import { Dispatcher } from "../orchestration/dispatcher.js";
-import { crawlSite } from "../crawlers/site-crawler.js";
 import { classifyContent } from "../analyzers/content-classifier.js";
+import { generateSiteProject } from "../analyzers/project-generator.js";
 import { auditSecurityHeaders } from "../analyzers/security-headers.js";
 import { synthesizeSite } from "../analyzers/site-synthesizer.js";
-import { generateSiteProject } from "../analyzers/project-generator.js";
+import { crawlSite } from "../crawlers/site-crawler.js";
 import { generateKcpManifest } from "../generators/kcp-manifest.js";
 import { appendTriageLog } from "../generators/triage-log.js";
+import { OrchestratorConfigSchema } from "../orchestration/config.js";
+import { Dispatcher } from "../orchestration/dispatcher.js";
 import type { TriageReport } from "../schemas/index.js";
 
 interface RunOpts {

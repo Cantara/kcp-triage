@@ -1,7 +1,7 @@
+import type { TaskRouting } from "../orchestration/config.js";
+import type { Dispatcher, TaskResult } from "../orchestration/dispatcher.js";
 import type { ContentClassification, CrawlResult } from "../schemas/index.js";
 import { ContentClassificationSchema } from "../schemas/index.js";
-import type { Dispatcher, TaskResult } from "../orchestration/dispatcher.js";
-import type { TaskRouting } from "../orchestration/config.js";
 
 const VALID_CATEGORIES = ["ecommerce", "blog", "news", "saas", "portfolio", "documentation", "government", "education", "social", "forum", "other"] as const;
 

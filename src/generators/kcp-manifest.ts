@@ -1,5 +1,5 @@
-import type { SiteIdentity, ContentClassification, SiteSynthesis, SiteProject, AuthorityBlock } from "../schemas/index.js";
 import YAML from "yaml";
+import type { AuthorityBlock, ContentClassification, SiteIdentity, SiteProject, SiteSynthesis } from "../schemas/index.js";
 
 /**
  * Generate a KCP (Knowledge Context Protocol) knowledge.yaml manifest.
@@ -27,11 +27,11 @@ import YAML from "yaml";
 export const KCP_VERSION = "0.29";
 export function generateKcpManifest(
 	site: SiteIdentity,
-	classification: ContentClassification,
-	synthesis: SiteSynthesis,
+	_classification: ContentClassification,
+	_synthesis: SiteSynthesis,
 	project: SiteProject,
 ): string {
-	const now: string = new Date().toISOString().split("T")[0]!; // YYYY-MM-DD
+	const now: string = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
 
 	const units: KcpUnit[] = [
 		{
