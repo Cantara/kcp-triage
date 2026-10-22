@@ -26,7 +26,7 @@
     "zod": "^4.0.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.15",
+    "@biomejs/biome": "2.6.2",
     "@types/bun": "latest",
     "typescript": "^7.0.0"
   }
