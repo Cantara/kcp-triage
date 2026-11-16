@@ -1,5 +1,5 @@
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
-import { dirname, join } from "node:path";
+import { dirname, join, relative, resolve, sep } from "node:path";
 import chalk from "chalk";
 import ora from "ora";
 import { classifyContent } from "../analyzers/content-classifier.js";
@@ -16,6 +16,16 @@ import type { TriageReport } from "../schemas/index.js";
 interface RunOpts {
 	dryRun: boolean;
 	goal?: string;
+}
+
+function resolveContainedPath(baseDir: string, relativeTarget: string): string {
+	const resolvedBase = resolve(baseDir);
+	const resolvedTarget = resolve(resolvedBase, relativeTarget);
+	const rel = relative(resolvedBase, resolvedTarget);
+	if (rel.startsWith("..") || rel.includes(`..${sep}`) || resolvedTarget === resolvedBase) {
+		throw new Error(`Unsafe generated file path outside target directory: ${relativeTarget}`);
+	}
+	return resolvedTarget;
 }
 
 export async function runPipeline(configPath: string, opts: RunOpts): Promise<void> {
@@ -81,26 +91,41 @@ export async function runPipeline(configPath: string, opts: RunOpts): Promise<vo
 	);
 	genSpinner.succeed("Site project generated");
 
-	// Write project files (clean generated dirs first to remove stale files from previous runs)
-	await rm(join(outputDir, "skills"), { recursive: true, force: true });
-	await rm(join(outputDir, "apis"), { recursive: true, force: true });
-	await mkdir(join(outputDir, "skills"), { recursive: true });
-	await mkdir(join(outputDir, "apis"), { recursive: true });
+	// Write project files (validate all generated paths before touching disk; preserve operator-owned captures/ and scripts/)
+	const skillsDir = resolveContainedPath(outputDir, "skills");
+	const apisDir = resolveContainedPath(outputDir, "apis");
+	const plannedSkillWrites = project.data.skills.map((skill) => ({
+		path: resolveContainedPath(skillsDir, `${skill.name}.md`),
+		content: skill.content,
+	}));
+	const plannedApiWrites = project.data.apis.map((api) => ({
+		path: resolveContainedPath(outputDir, api.path),
+		content: api.content,
+	}));
 
-	await writeFile(join(outputDir, "CLAUDE.md"), project.data.claudeMd);
-	await writeFile(join(outputDir, "README.md"), project.data.readmeMd);
-	await writeFile(join(outputDir, "sitemap.md"), project.data.sitemapMd);
+	await rm(skillsDir, { recursive: true, force: true });
+	await rm(apisDir, { recursive: true, force: true });
+	await mkdir(skillsDir, { recursive: true });
+	await mkdir(apisDir, { recursive: true });
 
-	for (const skill of project.data.skills) {
-		await writeFile(join(outputDir, "skills", `${skill.name}.md`), skill.content);
+	await writeFile(resolveContainedPath(outputDir, "CLAUDE.md"), project.data.claudeMd);
+	await writeFile(
+		resolveContainedPath(outputDir, "AGENTS.md"),
+		project.data.agentsMd ?? project.data.claudeMd,
+	);
+	await writeFile(resolveContainedPath(outputDir, "README.md"), project.data.readmeMd);
+	await writeFile(resolveContainedPath(outputDir, "sitemap.md"), project.data.sitemapMd);
+
+	for (const skill of plannedSkillWrites) {
+		await writeFile(skill.path, skill.content);
 	}
 
-	for (const api of project.data.apis) {
-		await writeFile(join(outputDir, api.path), api.content);
+	for (const api of plannedApiWrites) {
+		await writeFile(api.path, api.content);
 	}
 
 	if (project.data.unknowns) {
-		await writeFile(join(outputDir, "unknowns.md"), project.data.unknowns);
+		await writeFile(resolveContainedPath(outputDir, "unknowns.md"), project.data.unknowns);
 	}
 
 	// ── Step 6: Generate KCP manifest (deterministic) ───────────

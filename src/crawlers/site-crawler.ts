@@ -38,16 +38,18 @@ export async function crawlSite(url: string, options: CrawlOptions): Promise<Cra
 				await new Promise((resolve) => setTimeout(resolve, delay));
 			}
 
-			// Enqueue same-origin links
-			for (const link of page.links) {
-				try {
-					const resolved = new URL(link.href, current);
-					resolved.hash = ""; // strip fragments
-					if (resolved.hostname === base.hostname && !visited.has(resolved.href)) {
-						queue.push(resolved.href);
+			// Only enqueue same-origin links when the page was actually HTML from the target site
+			if (page.outcome === "ok") {
+				for (const link of page.links) {
+					try {
+						const resolved = new URL(link.href, current);
+						resolved.hash = ""; // strip fragments
+						if (resolved.hostname === base.hostname && !visited.has(resolved.href)) {
+							queue.push(resolved.href);
+						}
+					} catch {
+						// skip malformed URLs
 					}
-				} catch {
-					// skip malformed URLs
 				}
 			}
 		} catch (err) {
@@ -95,6 +97,35 @@ export async function crawlSite(url: string, options: CrawlOptions): Promise<Cra
 	return { site, pages, robotsTxt, sitemapUrls: sitemapUrls.length > 0 ? sitemapUrls : undefined };
 }
 
+function classifyCrawlOutcome(
+	requestedUrl: string,
+	finalUrl: string,
+	statusCode: number,
+	contentType: string,
+): "ok" | "auth-required" | "http-error" | "non-html" {
+	const reqHost = new URL(requestedUrl).hostname.toLowerCase();
+	const finalParsed = new URL(finalUrl);
+	const finalHost = finalParsed.hostname.toLowerCase();
+	const finalPath = finalParsed.pathname.toLowerCase();
+
+	if (statusCode === 401 || statusCode === 403) {
+		return "auth-required";
+	}
+	if (
+		(finalHost !== reqHost && /(login|auth|sso|idporten|oauth|saml|microsoftonline|okta|auth0)/i.test(finalHost)) ||
+		/(\/my\.policy|\/oauth2\/|\/saml|\/login|\/signin)/i.test(finalPath)
+	) {
+		return "auth-required";
+	}
+	if (statusCode >= 400) {
+		return "http-error";
+	}
+	if (!contentType.toLowerCase().includes("html")) {
+		return "non-html";
+	}
+	return "ok";
+}
+
 async function fetchAndParse(url: string, timeoutMs: number): Promise<CrawlPage> {
 	const controller = new AbortController();
 	const timer = setTimeout(() => controller.abort(), timeoutMs);
@@ -104,8 +135,37 @@ async function fetchAndParse(url: string, timeoutMs: number): Promise<CrawlPage>
 			signal: controller.signal,
 			headers: { "User-Agent": "kcp-triage-bot/0.1.0 (+https://github.com/Cantara/kcp-triage)" },
 		});
-		const html = await res.text();
-		const $ = cheerio.load(html);
+		const finalUrl = res.url || url;
+		const redirected = res.redirected || finalUrl !== url;
+		const contentType = res.headers.get("content-type") ?? "unknown";
+		const outcome = classifyCrawlOutcome(url, finalUrl, res.status, contentType);
+		const rawBody = await res.text();
+
+		if (outcome === "non-html") {
+			return {
+				url,
+				finalUrl,
+				redirected,
+				outcome,
+				statusCode: res.status,
+				contentType,
+				headings: [],
+				links: [],
+				metaTags: {},
+				bodyTextPreview: rawBody.replace(/\s+/g, " ").trim().slice(0, 2000),
+				crawledAt: new Date().toISOString(),
+			};
+		}
+
+		const $ = cheerio.load(rawBody);
+
+		// Inventory closed <dialog> elements separately before removing them from visible body extraction
+		const dialogs = $("dialog:not([open])")
+			.map((_, el) => $(el).text().replace(/\s+/g, " ").trim().slice(0, 300))
+			.get()
+			.filter(Boolean);
+
+		$("dialog:not([open]), template, script, style, noscript").remove();
 
 		const headings = $("h1, h2, h3, h4, h5, h6")
 			.map((_, el) => ({
@@ -134,11 +194,15 @@ async function fetchAndParse(url: string, timeoutMs: number): Promise<CrawlPage>
 
 		return {
 			url,
+			finalUrl,
+			redirected,
+			outcome,
 			statusCode: res.status,
-			contentType: res.headers.get("content-type") ?? "unknown",
+			contentType,
 			title: $("title").text().trim() || undefined,
 			headings,
 			links,
+			...(dialogs.length > 0 ? { dialogs } : {}),
 			metaTags,
 			bodyTextPreview: bodyText,
 			crawledAt: new Date().toISOString(),
