@@ -9,7 +9,7 @@
         "chalk": "^6.0.0",
         "cheerio": "^1.0.0",
         "commander": "^15.0.0",
-        "ora": "^9.0.0",
+        "ora": "^10.0.0",
         "pino": "^10.3.1",
         "undici": "^8.9.0",
         "yaml": "^2.8.2",
@@ -153,7 +153,7 @@
 
     "onetime": ["onetime@7.0.0", "", { "dependencies": { "mimic-function": "^5.0.0" } }, ""],
 
-    "ora": ["ora@9.4.1", "", { "dependencies": { "chalk": "^5.6.2", "cli-cursor": "^5.0.0", "cli-spinners": "^3.2.0", "is-interactive": "^2.0.0", "is-unicode-supported": "^2.1.0", "log-symbols": "^7.0.1", "stdin-discarder": "^0.3.2", "string-width": "^8.1.0" } }, ""],
+    "ora": ["ora@10.0.0", "", { "dependencies": { "chalk": "^6.0.1", "cli-cursor": "^5.0.0", "cli-spinners": "^3.4.0", "is-interactive": "^2.0.0", "is-unicode-supported": "^2.1.0", "log-symbols": "^7.0.1", "stdin-discarder": "^0.3.2", "string-width": "^8.3.0" } }, "sha512-jlxvSlLi1aKgPUnRf8NMjwyor1CM4K+faxuycHYTvygjjtkM596tQBXGEp/PQAVqzftrCBMRJlw6+RAJS5nOtQ=="],
 
     "parse5": ["parse5@7.3.0", "", { "dependencies": { "entities": "^6.0.0" } }, ""],
 
@@ -189,7 +189,7 @@
 
     "stdin-discarder": ["stdin-discarder@0.3.2", "", {}, ""],
 
-    "string-width": ["string-width@8.2.2", "", { "dependencies": { "get-east-asian-width": "^1.5.0", "strip-ansi": "^7.1.2" } }, ""],
+    "string-width": ["string-width@8.3.0", "", { "dependencies": { "get-east-asian-width": "^1.5.0", "strip-ansi": "^7.1.2" } }, "sha512-ZbmZM0JCihQN91dWnxoipT2KOEyHqEyfRXUyjuRhW8b/xnqPDoq4gWEVApTVa9db2wN8mmoikgFBbjh71+cGeQ=="],
 
     "strip-ansi": ["strip-ansi@7.2.0", "", { "dependencies": { "ansi-regex": "^6.2.2" } }, ""],
 
@@ -216,8 +216,6 @@
     "cheerio/undici": ["undici@7.24.4", "", {}, ""],
 
     "htmlparser2/entities": ["entities@7.0.1", "", {}, ""],
-
-    "ora/chalk": ["chalk@5.6.2", "", {}, ""],
 
     "parse5/entities": ["entities@6.0.1", "", {}, ""],
   }
