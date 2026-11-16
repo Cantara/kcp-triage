@@ -3,6 +3,7 @@ import {
 	ContentClassificationSchema,
 	SecurityAuditSchema,
 	SiteIdentitySchema,
+	SiteProjectSchema,
 	TriageReportSchema,
 } from "../src/schemas/index.js";
 
@@ -90,6 +91,55 @@ describe("SecurityAuditSchema", () => {
 			overallGrade: "B",
 			vulnerabilities: [],
 			auditedAt: new Date().toISOString(),
+		});
+		expect(result.success).toBe(true);
+	});
+});
+
+describe("SiteProjectSchema path traversal protection", () => {
+	test("rejects skill names with path traversal", () => {
+		const result = SiteProjectSchema.safeParse({
+			claudeMd: "# Overview",
+			readmeMd: "# Readme",
+			sitemapMd: "# Sitemap",
+			skills: [{ name: "../../etc/passwd", content: "bad" }],
+			apis: [],
+		});
+		expect(result.success).toBe(false);
+	});
+
+	test("rejects API paths outside apis/", () => {
+		const result = SiteProjectSchema.safeParse({
+			claudeMd: "# Overview",
+			readmeMd: "# Readme",
+			sitemapMd: "# Sitemap",
+			skills: [],
+			apis: [
+				{
+					name: "products",
+					path: "../outside.md",
+					content: "bad",
+					confidence: "verified",
+				},
+			],
+		});
+		expect(result.success).toBe(false);
+	});
+
+	test("accepts valid slug skill names and apis/ paths", () => {
+		const result = SiteProjectSchema.safeParse({
+			claudeMd: "# Overview",
+			readmeMd: "# Readme",
+			sitemapMd: "# Sitemap",
+			skills: [{ name: "navigate-portal", content: "ok" }],
+			apis: [
+				{
+					name: "products-api",
+					path: "apis/products-api.md",
+					content: "ok",
+					confidence: "verified",
+				},
+			],
 		});
 		expect(result.success).toBe(true);
 	});

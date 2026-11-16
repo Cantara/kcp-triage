@@ -28,10 +28,13 @@ export const KCP_VERSION = "0.29";
 export function generateKcpManifest(
 	site: SiteIdentity,
 	_classification: ContentClassification,
-	_synthesis: SiteSynthesis,
+	synthesis: SiteSynthesis,
 	project: SiteProject,
 ): string {
 	const now: string = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+	const requiresAuth =
+		synthesis.interactionModel === "authenticated" ||
+		Boolean(synthesis.authentication && !/^(none|public|no|unauthenticated)$/i.test(synthesis.authentication.trim()));
 
 	const units: KcpUnit[] = [
 		{
@@ -47,6 +50,22 @@ export function generateKcpManifest(
 			hints: {
 				load_strategy: "eager",
 				priority: "critical",
+				density: "dense",
+			},
+		},
+		{
+			id: "agents-guide",
+			path: "AGENTS.md",
+			intent: `Cross-harness agent instructions for navigating and interacting with ${site.domain}`,
+			scope: "global",
+			audience: ["agent", "developer"],
+			kind: "knowledge",
+			format: "markdown",
+			validated: now,
+			depends_on: ["site-overview"],
+			hints: {
+				load_strategy: "lazy",
+				priority: "supplementary",
 				density: "dense",
 			},
 		},
@@ -125,7 +144,10 @@ export function generateKcpManifest(
 	}
 
 	// APIs — authority maps per RFC-0009: verified→requires_approval, rumor→denied
+	// Access separates authentication requirements from epistemic confidence:
+	// an API observed on an authenticated portal remains "restricted" even when confidence === "verified".
 	for (const api of project.apis) {
+		const isPublicApi = api.confidence === "verified" && !requiresAuth;
 		units.push({
 			id: `api-${api.name}`,
 			path: api.path,
@@ -136,7 +158,7 @@ export function generateKcpManifest(
 			format: "markdown",
 			validated: now,
 			depends_on: ["site-overview"],
-			access: api.confidence === "verified" ? "public" : "restricted",
+			access: isPublicApi ? "public" : "restricted",
 			authority: mapApiConfidenceToAuthority(api.confidence),
 			hints: {
 				load_strategy: "lazy",

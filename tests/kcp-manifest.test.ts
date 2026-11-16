@@ -171,7 +171,36 @@ describe("RFC-0009 authority blocks", () => {
 		const yaml = generateKcpManifest(site, classification, synthesis, makeProject());
 		const manifest = parseManifest(yaml);
 		const overview = manifest.units.find((u: { id: string }) => u.id === "site-overview");
+		const agentsGuide = manifest.units.find((u: { id: string }) => u.id === "agents-guide");
 		// Knowledge units don't set per-unit authority — they inherit root defaults
 		expect(overview.authority).toBeUndefined();
+		expect(agentsGuide).toBeDefined();
+		expect(agentsGuide.path).toBe("AGENTS.md");
+	});
+
+	test("verified API on an authenticated site remains restricted (not public)", () => {
+		const authSynthesis: SiteSynthesis = {
+			...synthesis,
+			interactionModel: "authenticated",
+			authentication: "OAuth2",
+		};
+		const project = makeProject({
+			apis: [{ name: "account", path: "apis/account.md", content: "", confidence: "verified" }],
+		});
+		const yaml = generateKcpManifest(site, classification, authSynthesis, project);
+		const manifest = parseManifest(yaml);
+		const api = manifest.units.find((u: { id: string }) => u.id === "api-account");
+		expect(api.access).toBe("restricted");
+		expect(api.authority.execute).toBe("requires_approval");
+	});
+
+	test("verified API on an unauthenticated read-only site is public", () => {
+		const project = makeProject({
+			apis: [{ name: "catalog", path: "apis/catalog.md", content: "", confidence: "verified" }],
+		});
+		const yaml = generateKcpManifest(site, classification, synthesis, project);
+		const manifest = parseManifest(yaml);
+		const api = manifest.units.find((u: { id: string }) => u.id === "api-catalog");
+		expect(api.access).toBe("public");
 	});
 });

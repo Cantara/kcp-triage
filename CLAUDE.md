@@ -27,15 +27,12 @@ triage-log.
   top-level) is at `kcp_version: "0.30"`. Manifests it *generates* for triaged sites
   are pinned separately via `KCP_VERSION` in `src/generators/kcp-manifest.ts`
   (currently `0.29`). Bumping one does not bump the other.
-- **`content_hash` drift fails CI — but only if CI runs.** `kcp validate` (the
-  check in `kcp-validate.yml`) recomputes each unit's `content_hash` against the
-  file on disk and hard-fails the build on a mismatch — it checks the hash, not
-  just the signature. The catch: the workflow's path filter only watches
-  `knowledge.yaml`, `src/**`, and `README.md` — not `skills/**` or `CLAUDE.md`
-  itself. Edit a `skills/*/SKILL.md` body (or this file) alone and CI never
-  runs, so a stale hash sits undetected until some unrelated push trips the
-  workflow and fails on it. Run `kcp sign --update-hashes` (or hand-edit the
-  digest in `knowledge.yaml`) whenever you change a skill body or this file.
+- **`content_hash` drift fails CI.** `kcp validate` (the check in `kcp-validate.yml`)
+  recomputes each unit's `content_hash` against the file on disk (`README.md`,
+  `CLAUDE.md`, `src/`, `skills/*/SKILL.md`) and hard-fails the build on a mismatch.
+  Run `kcp sign --update-hashes` (or update the `content_hash` digest in
+  `knowledge.yaml`) whenever you change `src/`, `README.md`, `CLAUDE.md`, or a
+  skill body.
 - **`skills/export-cantara/SKILL.md` describes infrastructure not present in this
   checkout** (a `StigLau/kcp-triage` private sibling, IronClaw files under
   `security/`, `src/defense/`) — none exist here and git history shows no

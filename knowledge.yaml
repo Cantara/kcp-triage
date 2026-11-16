@@ -61,7 +61,7 @@ units:
       ]
     content_hash:
       algorithm: sha256
-      value: "ce44a1dc8bb2082bb860ce4273af43ddcaed36d7cd2a068f5de2bfc3c08742f5"
+      value: "7b066d1a31ff44445410284481f836b9a3858ad7eaedd7e30e1a04b8d83a1dc2"
 
   - id: claude-context
     path: CLAUDE.md
@@ -82,7 +82,7 @@ units:
       ]
     content_hash:
       algorithm: sha256
-      value: "735fad0609bae3d57ff6a6d1894f52cf3e90fc9c93f697a0dbf430fa3c586874"
+      value: "8538f502e1ed4c6844c7b46570e335947bc2dbd40e614bcf2c47aa7e781b1f58"
 
   - id: builder-src
     path: src/
@@ -109,7 +109,7 @@ units:
       ]
     content_hash:
       algorithm: sha256
-      value: "1e316472b41026a653eacd0e34627ed27c5e8e158ef89a41cc7105892842ba80"
+      value: "296baaaf97f6e76f4dbb85cfeb3250bb711f8bf03cf68d425f15c0314fd7242c"
 
   # The procedural plane (KCP §4.3a, RFC-0028): kcp-triage's nine agent skills declared
   # as governed procedures rather than files that happen to describe procedures.
@@ -132,7 +132,7 @@ units:
     triggers: [ triage, orchestrate, pipeline, entry point, route ]
     load_eligible: true
     action_scope:
-      tools: [ Bash, Read, Task ]
+      tools: [ Bash, Read, Task, bash, read, subagent ]
       capabilities: [ "triage.orchestrate" ]
     content_hash:
       algorithm: sha256
@@ -149,7 +149,7 @@ units:
     load_eligible: true
     action_scope:
       # Reaches the public internet by design; writes only under its own site output.
-      tools: [ Bash, Read, Write, WebFetch ]
+      tools: [ Bash, Read, Write, WebFetch, bash, read, write ]
       paths: [ "sites/**", "src/analyzers/**" ]
       capabilities: [ "triage.scan", "network.fetch" ]
     content_hash:
@@ -166,7 +166,7 @@ units:
     triggers: [ security, headers, secrets, audit, grade, vulnerability ]
     load_eligible: true
     action_scope:
-      tools: [ Bash, Read, WebFetch ]
+      tools: [ Bash, Read, WebFetch, bash, read ]
       capabilities: [ "triage.security-audit", "network.fetch" ]
     content_hash:
       algorithm: sha256
@@ -182,7 +182,7 @@ units:
     triggers: [ KCP, manifest, generate, knowledge.yaml, step 6 ]
     load_eligible: true
     action_scope:
-      tools: [ Bash, Read, Write ]
+      tools: [ Bash, Read, Write, bash, read, write ]
       paths: [ "sites/**", "src/generators/**" ]
       capabilities: [ "triage.generate-kcp" ]
     content_hash:
@@ -199,7 +199,7 @@ units:
     triggers: [ analyzer, extend, pipeline, add step, SEO, performance ]
     load_eligible: true
     action_scope:
-      tools: [ Bash, Read, Write, Edit, Grep ]
+      tools: [ Bash, Read, Write, Edit, Grep, bash, read, write, edit ]
       paths: [ "src/**", "tests/**" ]
       capabilities: [ "triage.extend-pipeline" ]
     content_hash:
@@ -216,7 +216,7 @@ units:
     triggers: [ SDD, spec, issue, branch, workflow, feature ]
     load_eligible: true
     action_scope:
-      tools: [ Bash, Read, Write, Edit ]
+      tools: [ Bash, Read, Write, Edit, bash, read, write, edit ]
       capabilities: [ "triage.sdd", "vcs.branch", "issue.write" ]
     content_hash:
       algorithm: sha256
@@ -232,7 +232,7 @@ units:
     triggers: [ delegate, multi-agent, model tier, Opus, Sonnet, Haiku, subagent ]
     load_eligible: true
     action_scope:
-      tools: [ Task, Read ]
+      tools: [ Task, Read, subagent, read ]
       capabilities: [ "triage.delegate" ]
     content_hash:
       algorithm: sha256
@@ -249,7 +249,7 @@ units:
     load_eligible: true
     action_scope:
       # Read-only by intent: it answers questions about past runs, it does not amend them.
-      tools: [ Read, Grep ]
+      tools: [ Read, Grep, read ]
       paths: [ "triage-log.yaml" ]
       capabilities: [ "triage.read-log" ]
     content_hash:
@@ -268,7 +268,7 @@ units:
     action_scope:
       # The widest scope here, and the only one that publishes outward. Sanitization is
       # the whole point, so the capability grant is narrow even though the tools are broad.
-      tools: [ Bash, Read, Write, Edit, Grep ]
+      tools: [ Bash, Read, Write, Edit, Grep, bash, read, write, edit ]
       capabilities: [ "triage.export-public", "vcs.push" ]
     content_hash:
       algorithm: sha256

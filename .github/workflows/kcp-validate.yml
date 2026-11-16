@@ -19,9 +19,9 @@ name: Validate KCP Manifest
 on:
   push:
     branches: [main]
-    paths: [knowledge.yaml, "src/**", "README.md"]
+    paths: [knowledge.yaml, "src/**", "skills/**", "README.md", "CLAUDE.md", ".github/workflows/kcp-validate.yml"]
   pull_request:
-    paths: [knowledge.yaml, "src/**", "README.md"]
+    paths: [knowledge.yaml, "src/**", "skills/**", "README.md", "CLAUDE.md", ".github/workflows/kcp-validate.yml"]
   workflow_dispatch:
 
 permissions:

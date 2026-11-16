@@ -11,9 +11,20 @@ export const SiteIdentitySchema = z.object({
 });
 export type SiteIdentity = z.infer<typeof SiteIdentitySchema>;
 
-// ─── Crawl Result ────────────────────────────────────────────────
+// ───Crawl Result ────────────────────────────────────────────────
+export const CrawlOutcomeSchema = z.enum([
+	"ok",
+	"auth-required",
+	"http-error",
+	"non-html",
+]);
+export type CrawlOutcome = z.infer<typeof CrawlOutcomeSchema>;
+
 export const CrawlPageSchema = z.object({
 	url: z.string().url(),
+	finalUrl: z.string().url().optional().describe("Final URL after HTTP redirects"),
+	redirected: z.boolean().optional(),
+	outcome: CrawlOutcomeSchema.optional(),
 	statusCode: z.number().int(),
 	contentType: z.string(),
 	title: z.string().optional(),
@@ -25,8 +36,12 @@ export const CrawlPageSchema = z.object({
 			rel: z.string().optional(),
 		}),
 	),
+	dialogs: z
+		.array(z.string())
+		.optional()
+		.describe("Pre-rendered closed <dialog> modal snippets discovered in DOM"),
 	metaTags: z.record(z.string(), z.string()),
-	bodyTextPreview: z.string().describe("First ~2000 chars of visible text"),
+	bodyTextPreview: z.string().describe("First ~2000 chars of visible text (excluding closed dialogs)"),
 	crawledAt: z.string().datetime(),
 });
 export type CrawlPage = z.infer<typeof CrawlPageSchema>;
@@ -91,9 +106,15 @@ export const SiteProjectFileSchema = z.object({
 	content: z.string().describe("File content"),
 });
 
+const SAFE_SLUG_REGEX = /^[a-zA-Z0-9][a-zA-Z0-9._-]*$/;
+const SAFE_API_PATH_REGEX = /^apis\/[a-zA-Z0-9][a-zA-Z0-9._-]*\.md$/;
+
 export const ApiEntrySchema = z.object({
-	name: z.string(),
-	path: z.string().describe("Relative file path, e.g. apis/products-api.md"),
+	name: z.string().regex(SAFE_SLUG_REGEX, "API name must be a safe slug without path separators"),
+	path: z
+		.string()
+		.regex(SAFE_API_PATH_REGEX, "API path must be a relative markdown file inside apis/ (e.g. apis/products-api.md)")
+		.describe("Relative file path, e.g. apis/products-api.md"),
 	content: z.string(),
 	confidence: z.enum(["verified", "inferred", "rumor"]),
 });
@@ -101,13 +122,18 @@ export const ApiEntrySchema = z.object({
 export const SiteProjectSchema = z.object({
 	claudeMd: z
 		.string()
-		.describe("CLAUDE.md content — LLM orientation for working with this site"),
+		.describe("CLAUDE.md / AGENTS.md content — LLM orientation for working with this site"),
+	agentsMd: z
+		.string()
+		.optional()
+		.describe("Optional dedicated AGENTS.md content (defaults to claudeMd when omitted)"),
 	readmeMd: z.string().describe("README.md — human-readable project card"),
 	sitemapMd: z.string().describe("sitemap.md — structured navigation model"),
 	skills: z.array(
 		z.object({
 			name: z
 				.string()
+				.regex(SAFE_SLUG_REGEX, "Skill name must be a safe slug without path separators")
 				.describe("Skill filename without extension, e.g. navigate"),
 			content: z.string().describe("Skill markdown content"),
 		}),
